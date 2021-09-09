@@ -1,9 +1,6 @@
 name: CI
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+on: push
   workflow_dispatch:
 
 jobs:
@@ -32,6 +29,7 @@ jobs:
           flutter build apk --target-platform android-arm,android-arm64,android-x64 --split-per-abi
       - name: Release Artifact
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           name: android
           files: build/app/outputs/flutter-apk/app.apk
