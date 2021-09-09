@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - "v*.*.*"
   workflow_dispatch:
 
 jobs:
@@ -30,8 +30,8 @@ jobs:
       - name: Build APK
         run:
           flutter build apk --target-platform android-arm,android-arm64,android-x64 --split-per-abi
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+      - name: Release Artifact
+        uses: softprops/action-gh-release@v1
         with:
           name: android
-          path: build/app/outputs/flutter-apk/app.apk
+          files: build/app/outputs/flutter-apk/app.apk
