@@ -25,9 +25,10 @@ jobs:
           echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
           echo "${{ secrets.KEYSTORE_PROPERTIES }}" | base64 --decode > android/key.properties
           echo "${{ secrets.FIREBASE_JSON }}" | base64 --decode > android/app/google-services.json
-      # - run: flutter test
+      # - name: Run Test
+      #  run: flutter test
       - name: Build APK
-      - run:
+        run:
           flutter build apk --target-platform android-arm,android-arm64,android-x64 --split-per-abi
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
