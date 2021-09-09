@@ -29,7 +29,7 @@ class App extends StatelessWidget {
       ),
     );
 
-    const debugPage = production ? null : "/attendance";
+    const debugPage = production ? null : "/home";
 
     final theme = Provider.of<ThemeChanger>(context);
 
@@ -42,6 +42,7 @@ class App extends StatelessWidget {
         brightness: brightness,
         primaryColor: color,
         primarySwatch: color,
+        snackBarTheme: SnackBarThemeData(actionTextColor: color),
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: color,
           cardColor: color,

@@ -3,7 +3,7 @@ description: The AFSE integrated JumpRope client.
 
 publish_to: "none"
 
-version: 2.0.1
+version: 2.0.2
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -38,6 +38,8 @@ dependencies:
   expandable: ^5.0.1
   linked_scroll_controller: ^0.2.0
   package_info_plus: ^1.0.4
+  version: ^2.0.0
+  ota_update: ^3.1.0
 
 dev_dependencies:
   flutter_lints: ^1.0.4

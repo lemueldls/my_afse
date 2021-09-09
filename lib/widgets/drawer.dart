@@ -5,6 +5,7 @@ import "../extensions/brightness.dart";
 import "../utils/api.dart" as api;
 import "../utils/routes.dart";
 import "../utils/student.dart";
+import "../utils/updater.dart" as updater;
 
 class DrawerListTile extends StatelessWidget {
   final String route;
@@ -96,6 +97,24 @@ class PageDrawer extends StatelessWidget {
                 shrinkWrap: true,
                 physics: clamping,
                 children: [
+                  updater.prompt
+                      ? TextButtonTheme(
+                          data: TextButtonThemeData(
+                            style: TextButton.styleFrom(primary: Colors.white),
+                          ),
+                          child: MaterialBanner(
+                            content:
+                                const Text("A new version is now avaliable"),
+                            leading: const Icon(Icons.update),
+                            actions: [
+                              TextButton(
+                                child: const Text("UPDATE"),
+                                onPressed: () => updater.update(),
+                              ),
+                            ],
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                   DrawerListTile(
                     route: "/login",
                     onTap: () async {

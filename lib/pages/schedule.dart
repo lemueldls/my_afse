@@ -202,7 +202,7 @@ class _PeriodListViewState extends State<PeriodListView> {
 
   @override
   void dispose() {
-    for (var timer in _timers) {
+    for (final timer in _timers) {
       timer.cancel();
     }
 
