@@ -20,7 +20,11 @@ jobs:
         with:
           flutter-version: 2.5.0
       - run: flutter pub get
-      - run: flutter test
+      # - run: flutter test
       - run:
-          flutter build apk --target-platform
-          android-arm,android-arm64,android-x64 --split-per-abi
+          flutter build apk --target-platform android-arm,android-arm64,android-x64 --split-per-abi
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: android
+          path: build/app/outputs/flutter-apk/app.apk
