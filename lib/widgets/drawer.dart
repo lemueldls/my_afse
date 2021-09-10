@@ -58,6 +58,7 @@ class PageDrawer extends StatelessWidget {
     final theme = Theme.of(context);
     final selectedColor = theme.brightness.text;
     final selectedTileColor = theme.primaryColor.withAlpha(85);
+    final contrast = theme.primaryColorBrightness.text;
 
     const clamping = ClampingScrollPhysics();
 
@@ -100,12 +101,13 @@ class PageDrawer extends StatelessWidget {
                   updater.prompt
                       ? TextButtonTheme(
                           data: TextButtonThemeData(
-                            style: TextButton.styleFrom(primary: Colors.white),
+                            style: TextButton.styleFrom(primary: contrast),
                           ),
                           child: MaterialBanner(
+                            contentTextStyle: TextStyle(color: contrast),
                             content:
                                 const Text("A new version is now avaliable"),
-                            leading: const Icon(Icons.update),
+                            leading: Icon(Icons.update, color: contrast),
                             actions: [
                               TextButton(
                                 child: const Text("UPDATE"),
