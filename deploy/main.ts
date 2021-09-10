@@ -2,10 +2,10 @@
 
 const token = Deno.env.get("TOKEN");
 
-addEventListener("fetch", async (event) => {
-  if (!token) return event.respondWith(new Response("Invalid token"));
+async function respond(request: Request): Promise<Response> {
+  if (!token) return new Response("Invalid token");
 
-  const { pathname } = new URL(event.request.url);
+  const { pathname } = new URL(request.url);
 
   const file = pathname.substring(1);
 
@@ -20,11 +20,15 @@ addEventListener("fetch", async (event) => {
 
   const version = tag_name.substring(1);
 
-  if (!file) return event.respondWith(new Response(version));
+  if (!file) return new Response(version);
 
   headers.set("accept", "application/octet-stream");
 
   for (const { name, url } of assets) {
-    if (file === name) return event.respondWith(await fetch(url, { headers }));
+    if (file === name) return fetch(url, { headers });
   }
-});
+
+  return new Response("File not found");
+}
+
+addEventListener("fetch", (event) => event.respondWith(respond(event.request)));
