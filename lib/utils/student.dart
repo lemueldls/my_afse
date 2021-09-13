@@ -38,7 +38,7 @@ Future<Map<String, dynamic>> fetchStudent() async {
   final data = (await api.get("student"))[0];
 
   student = Student.fromJson(data);
-  await prefs.setString("student", JsonEncoder().convert(data));
+  await prefs.setString("student", jsonEncode(data));
 
   return data;
 }
@@ -77,7 +77,7 @@ class Student {
   });
 
   factory Student.fromJson(Map<String, dynamic> json) => Student(
-        modified: DateFormat.yMMMMEEEEd().add_jm().format(
+        modified: DateFormat.yMMMEd().add_jm().format(
               DateFormat("yyyy-MM-ddTHH:mm:ss").parseUtc(
                 json["time_modified"],
               ),
