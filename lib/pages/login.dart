@@ -264,8 +264,5 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) return "Please enter your password";
-
-    if ((int.tryParse(value)?.isNaN ?? true) || value.length != 9)
-      return "This is not a valid password";
   }
 }
