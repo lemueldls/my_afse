@@ -115,7 +115,7 @@ class SchedulePage extends StatefulWidget {
 class _PeriodListViewState extends State<PeriodListView> {
   int? _selectedIndex;
 
-  final List<Timer> _timers = [];
+  Timer? _timer;
 
   @override
   build(final context) {
@@ -128,6 +128,27 @@ class _PeriodListViewState extends State<PeriodListView> {
 
     const empty = SizedBox.shrink();
 
+    if (today) {
+      void update() {
+        final now = DateTime.now();
+
+        _selectedIndex = day.indexWhere((final period) {
+          final start = _timeToDate(period.start);
+          final end = _timeToDate(period.end);
+
+          if (now.isAfter(start) && now.isBefore(end)) {
+            _timer = Timer(end.difference(now), () => setState(() => update()));
+
+            return true;
+          }
+
+          return false;
+        });
+      }
+
+      update();
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const ClampingScrollPhysics(),
@@ -139,26 +160,6 @@ class _PeriodListViewState extends State<PeriodListView> {
       itemCount: day.length,
       itemBuilder: (final context, final index) {
         final period = day[index];
-
-        if (today) {
-          final start = _timeToDate(period.start);
-          final end = _timeToDate(period.end);
-
-          update({final init = false}) {
-            final now = DateTime.now();
-
-            if (now.isAfter(end)) return;
-
-            if (now.isAfter(start))
-              init
-                  ? _selectedIndex = index
-                  : setState(() => _selectedIndex = index);
-            else
-              _timers.add(Timer(start.difference(now), update));
-          }
-
-          update(init: true);
-        }
 
         final selected = today && _selectedIndex == index;
 
@@ -202,9 +203,7 @@ class _PeriodListViewState extends State<PeriodListView> {
 
   @override
   void dispose() {
-    for (final timer in _timers) {
-      timer.cancel();
-    }
+    _timer?.cancel();
 
     super.dispose();
   }
