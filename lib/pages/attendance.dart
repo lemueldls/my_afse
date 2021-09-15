@@ -258,14 +258,20 @@ class TableHead extends StatelessWidget {
 }
 
 class _AttendancePageShimmer extends StatelessWidget {
+  final int rows;
   final int columns;
 
-  const _AttendancePageShimmer({final Key? key, required final this.columns})
-      : super(key: key);
+  const _AttendancePageShimmer({
+    final Key? key,
+    required final this.rows,
+    required final this.columns,
+  }) : super(key: key);
 
   @override
   build(final context) {
     final size = MediaQuery.of(context).size;
+
+    const never = NeverScrollableScrollPhysics();
 
     final width = size.width ~/ cellSize;
     final height = size.height ~/ cellSize;
@@ -273,7 +279,8 @@ class _AttendancePageShimmer extends StatelessWidget {
     return columns == 0
         ? const ListTile(title: CustomShimmer())
         : ListView.builder(
-            itemCount: height,
+            physics: never,
+            itemCount: min(rows + 1, height),
             itemBuilder: (final context, final index) => SizedBox(
               height: cellSize,
               width: size.width,
@@ -287,6 +294,7 @@ class _AttendancePageShimmer extends StatelessWidget {
                   ),
                   Expanded(
                     child: ListView.builder(
+                      physics: never,
                       itemCount: min(columns, width),
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (final context, final index) =>
@@ -312,6 +320,7 @@ class _AttendancePageState extends State<AttendancePage> {
 
   final _prefs = SharedPreferences.getInstance();
 
+  int _rows = 15;
   int _columns = 15;
 
   late Future<AttendanceData> _futureAttendance = _fetchAttendance();
@@ -326,12 +335,14 @@ class _AttendancePageState extends State<AttendancePage> {
           builder: (final context, final snapshot) {
             if (snapshot.hasError) return Text("${snapshot.error}");
             if (snapshot.connectionState == ConnectionState.waiting)
-              return _AttendancePageShimmer(columns: _columns);
+              return _AttendancePageShimmer(rows: _rows, columns: _columns);
 
             final data = snapshot.data!;
 
+            final table = data.table;
             final columns = data.columns;
-            _saveColumns(columns);
+
+            _saveTable(table.length, columns);
 
             return columns == 0
                 ? const ListTile(
@@ -346,7 +357,7 @@ class _AttendancePageState extends State<AttendancePage> {
                       Expanded(
                         child: TableBody(
                           scrollController: _bodyController,
-                          table: data.table,
+                          table: table,
                           columns: columns,
                         ),
                       ),
@@ -368,7 +379,7 @@ class _AttendancePageState extends State<AttendancePage> {
   void initState() {
     super.initState();
 
-    _loadColumns();
+    _loadTable();
   }
 
   Future<AttendanceData> _fetchAttendance() async {
@@ -388,9 +399,10 @@ class _AttendancePageState extends State<AttendancePage> {
       throw Exception("Failed to load attendance");
   }
 
-  Future<void> _loadColumns() async {
+  Future<void> _loadTable() async {
     final prefs = await SharedPreferences.getInstance();
 
+    setState(() => _rows = prefs.getInt("rows") ?? _rows);
     setState(() => _columns = prefs.getInt("columns") ?? _columns);
   }
 
@@ -402,9 +414,10 @@ class _AttendancePageState extends State<AttendancePage> {
             .catchError((final error) => _refreshController.refreshFailed());
       });
 
-  Future<void> _saveColumns(final int columns) async {
+  Future<void> _saveTable(final int rows, final int columns) async {
     final prefs = await _prefs;
 
+    await prefs.setInt("rows", _rows = rows);
     await prefs.setInt("columns", _columns = columns);
   }
 }
