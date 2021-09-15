@@ -16,15 +16,15 @@ class Event {
   final String url;
 
   const Event({
-    required this.summary,
-    required this.time,
-    required this.location,
-    required this.url,
+    required final this.summary,
+    required final this.time,
+    required final this.location,
+    required final this.url,
   });
 }
 
 class EventCards extends StatefulWidget {
-  const EventCards({Key? key}) : super(key: key);
+  const EventCards({final Key? key}) : super(key: key);
 
   @override
   EventCardsState createState() => EventCardsState();
@@ -38,9 +38,9 @@ class EventCardsState extends State<EventCards> {
   late Future<EventData> futureEvents = _fetchEvents();
 
   @override
-  build(context) => FutureBuilder<EventData>(
+  build(final context) => FutureBuilder<EventData>(
         future: futureEvents,
-        builder: (context, snapshot) {
+        builder: (final context, final snapshot) {
           if (snapshot.hasError) return Text("${snapshot.error}");
           if (snapshot.connectionState == ConnectionState.waiting)
             return _EventsCardShimmer(events: _events);
@@ -61,7 +61,7 @@ class EventCardsState extends State<EventCards> {
                   shrinkWrap: true,
                   physics: const ClampingScrollPhysics(),
                   itemCount: length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (final context, final index) {
                     final event = events[index];
 
                     final location = event.location;
@@ -126,13 +126,13 @@ class EventCardsState extends State<EventCards> {
       throw Exception("Failed to load events");
   }
 
-  void _loadEvents() async {
+  Future<void> _loadEvents() async {
     final prefs = await _prefs;
 
-    setState(() => _events = (prefs.getInt("events") ?? _events));
+    setState(() => _events = prefs.getInt("events") ?? _events);
   }
 
-  void _saveEvents(int events) async {
+  Future<void> _saveEvents(final int events) async {
     final prefs = await _prefs;
 
     await prefs.setInt("events", _events = events);
@@ -142,22 +142,23 @@ class EventCardsState extends State<EventCards> {
 class EventData {
   final List<Event> events;
 
-  const EventData({required this.events});
+  const EventData({required final this.events});
 
-  factory EventData.parseData(String data) {
+  factory EventData.parseData(final String data) {
     final ical = ICalendar.fromString(data);
     final now = DateTime.now();
 
     return EventData(
       events: ical.data
           .where(
-        (event) =>
+        (final event) =>
             event["type"] == "VEVENT" &&
             now.difference(event["dtstart"].toDateTime()).inDays <= 31,
       )
           .map(
-        (event) {
-          jm(IcsDateTime time) => DateFormat.jm().format(time.toDateTime()!);
+        (final event) {
+          jm(final IcsDateTime time) =>
+              DateFormat.jm().format(time.toDateTime()!);
 
           final IcsDateTime start = event["dtstart"];
           final IcsDateTime? end = event["dtend"];
@@ -179,23 +180,24 @@ class EventData {
 class _EventsCardShimmer extends StatelessWidget {
   final int events;
 
-  const _EventsCardShimmer({Key? key, required this.events}) : super(key: key);
+  const _EventsCardShimmer({final Key? key, required final this.events})
+      : super(key: key);
 
   @override
-  build(context) => ListView.builder(
+  build(final context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(events, 1),
-        itemBuilder: (context, index) => Card(
+        itemBuilder: (final context, final index) => Card(
           child: events == 0
               ? const ListTile(title: CustomShimmer())
               : const ListTile(
                   title: CustomShimmer(),
                   subtitle: CustomShimmer(),
                   trailing: CustomShimmer(
-                    width: 24.0,
-                    height: 24.0,
-                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    width: 24,
+                    height: 24,
+                    padding: EdgeInsets.symmetric(horizontal: 12),
                   ),
                 ),
         ),

@@ -13,7 +13,7 @@ late final List<NavigatorObserver> observer = production
     ? [
         FirebaseAnalyticsObserver(
           analytics: analytics!,
-          nameExtractor: (settings) => pageRoutes[settings.name]!.title,
+          nameExtractor: (final settings) => pageRoutes[settings.name]!.title,
         ),
       ]
     : const [];

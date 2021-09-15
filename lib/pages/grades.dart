@@ -15,10 +15,11 @@ import "../widgets/work.dart";
 class GradesNodeTree extends StatelessWidget {
   final MasteryScore score;
 
-  const GradesNodeTree({Key? key, required this.score}) : super(key: key);
+  const GradesNodeTree({final Key? key, required final this.score})
+      : super(key: key);
 
   @override
-  build(context) {
+  build(final context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -36,11 +37,11 @@ class GradesNodeTree extends StatelessWidget {
         SizedBox(
           height: 20,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(4.0),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: score.percent,
               color: colors[score.color],
-              minHeight: 24.0,
+              minHeight: 24,
             ),
           ),
         ),
@@ -61,11 +62,11 @@ class GradesNodeTree extends StatelessWidget {
       // final missing = score.missing;
 
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: ExpandableNotifier(
           child: ExpandablePanel(
             header: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 children: [
                   Row(
@@ -75,7 +76,7 @@ class GradesNodeTree extends StatelessWidget {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Row(
                       children: [
                         Expanded(
@@ -85,7 +86,7 @@ class GradesNodeTree extends StatelessWidget {
                                 .copyWith(color: textTheme.caption!.color),
                           ),
                         ),
-                        // sum != 100.0 ?
+                        // sum != 100 ?
                         Text("=${sum.toStringAsFixed(0)} weight")
                         // : empty
                         ,
@@ -96,19 +97,19 @@ class GradesNodeTree extends StatelessWidget {
                         //           children: [
                         //             Container(
                         //               padding: const EdgeInsets.symmetric(
-                        //                 horizontal: 3.0,
-                        //                 vertical: 2.0,
+                        //                 horizontal: 3,
+                        //                 vertical: 2,
                         //               ),
                         //               decoration: BoxDecoration(
                         //                 color: Colors.red,
                         //                 borderRadius:
-                        //                     BorderRadius.circular(4.0),
+                        //                     BorderRadius.circular(4),
                         //               ),
                         //               child: Text(
                         //                 "$missing missing",
                         //                 style: const TextStyle(
                         //                   color: Colors.white,
-                        //                   fontSize: 12.0,
+                        //                   fontSize: 12,
                         //                 ),
                         //               ),
                         //             )
@@ -131,7 +132,7 @@ class GradesNodeTree extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const ClampingScrollPhysics(),
                 itemCount: children.length,
-                itemBuilder: (context, index) =>
+                itemBuilder: (final context, final index) =>
                     GradesNodeTree(score: children[index]),
               ),
             ),
@@ -141,17 +142,17 @@ class GradesNodeTree extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: InkWell(
-        borderRadius: BorderRadius.circular(4.0),
+        borderRadius: BorderRadius.circular(4),
         onTap: () => _selectScore(context, score),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Text(score.title!),
               ),
               Row(
@@ -172,7 +173,7 @@ class GradesNodeTree extends StatelessWidget {
     );
   }
 
-  void _selectScore(BuildContext context, MasteryScore score) {
+  void _selectScore(final BuildContext context, final MasteryScore score) {
     const empty = SizedBox.shrink();
 
     const bold = TextStyle(fontWeight: FontWeight.bold);
@@ -181,7 +182,7 @@ class GradesNodeTree extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (final context) => AlertDialog(
         title: Text(score.title!),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -216,7 +217,7 @@ class GradesNodeTree extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
                   const Text("End Date: ", style: bold),
@@ -234,14 +235,14 @@ class GradesNodeTree extends StatelessWidget {
 }
 
 class GradesPage extends StatefulWidget {
-  const GradesPage({Key? key}) : super(key: key);
+  const GradesPage({final Key? key}) : super(key: key);
 
   @override
   _GradesPageState createState() => _GradesPageState();
 }
 
 class MasteryScore {
-  final bool? expanded;
+  final bool expanded;
   final String label;
   final String scoreLabel;
   final String color;
@@ -257,23 +258,23 @@ class MasteryScore {
   final String modified;
 
   const MasteryScore({
-    required this.expanded,
-    required this.label,
-    required this.scoreLabel,
-    required this.color,
-    required this.percent,
-    required this.sum,
-    required this.missing,
-    required this.children,
-    required this.title,
-    required this.comment,
-    required this.recent,
-    required this.weight,
-    required this.end,
-    required this.modified,
+    required final this.expanded,
+    required final this.label,
+    required final this.scoreLabel,
+    required final this.color,
+    required final this.percent,
+    required final this.sum,
+    required final this.missing,
+    required final this.children,
+    required final this.title,
+    required final this.comment,
+    required final this.recent,
+    required final this.weight,
+    required final this.end,
+    required final this.modified,
   });
 
-  factory MasteryScore.fromJson(Map<String, dynamic> json) {
+  factory MasteryScore.fromJson(final Map<String, dynamic> json) {
     final label = json["label"];
     final List? children = json["children"];
     final String? end = json["assessment_end_date"];
@@ -282,7 +283,7 @@ class MasteryScore {
     final format = DateFormat("y-M-d");
 
     return MasteryScore(
-      expanded: json["expanded"],
+      expanded: json["expanded"] ?? false,
       label: label is List ? label[0] : label,
       scoreLabel: json["score_label"],
       color: json["color"],
@@ -290,7 +291,7 @@ class MasteryScore {
       sum: json["weight_sum"],
       missing: json["threshold_details"]["missing_count"],
       children: children
-          ?.map((score) => MasteryScore.fromJson(score))
+          ?.map((final score) => MasteryScore.fromJson(score))
           .toList(growable: false),
       title: json["assessment_title"],
       comment: json["comment"],
@@ -316,19 +317,20 @@ class MasteryScore {
 class _GradesPageShimmer extends StatelessWidget {
   final int scores;
 
-  const _GradesPageShimmer({Key? key, required this.scores}) : super(key: key);
+  const _GradesPageShimmer({final Key? key, required final this.scores})
+      : super(key: key);
 
   @override
-  build(context) => ListView.builder(
+  build(final context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(scores, 1),
-        itemBuilder: (context, index) => scores == 0
+        itemBuilder: (final context, final index) => scores == 0
             ? const ListTile(title: CustomShimmer())
             : Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 12.0,
+                  horizontal: 16,
+                  vertical: 12,
                 ),
                 child: Row(
                   children: [
@@ -343,12 +345,12 @@ class _GradesPageShimmer extends StatelessWidget {
                                   children: const [
                                     CustomShimmer(),
                                     // CustomShimmer(
-                                    //   padding: EdgeInsets.only(top: 4.0)
+                                    //   padding: EdgeInsets.only(top: 4)
                                     // ),
                                     CustomShimmer(
                                       padding: EdgeInsets.only(
-                                        top: 4.0,
-                                        bottom: 8.0,
+                                        top: 4,
+                                        bottom: 8,
                                       ),
                                     ),
                                   ],
@@ -356,26 +358,26 @@ class _GradesPageShimmer extends StatelessWidget {
                               ),
                               const Expanded(
                                 child: CustomShimmer(
-                                  height: 24.0,
-                                  padding: EdgeInsets.only(left: 8.0),
+                                  height: 24,
+                                  padding: EdgeInsets.only(left: 8),
                                 ),
                               )
                             ],
                           ),
                           Row(
                             children: const [
-                              CustomShimmer(width: 160.0),
+                              CustomShimmer(width: 160),
                               Spacer(),
-                              CustomShimmer(width: 80.0)
+                              CustomShimmer(width: 80)
                             ],
                           ),
                         ],
                       ),
                     ),
                     const CustomShimmer(
-                      width: 24.0,
-                      height: 24.0,
-                      padding: EdgeInsets.only(left: 16.0),
+                      width: 24,
+                      height: 24,
+                      padding: EdgeInsets.only(left: 16),
                     )
                   ],
                 ),
@@ -396,7 +398,7 @@ class _GradesPageState extends State<GradesPage> {
   final _missingKey = LabeledGlobalKey<WorkCardState>("Missing");
 
   @override
-  build(context) {
+  build(final context) {
     final theme = Theme.of(context);
 
     return SmartRefresher(
@@ -406,17 +408,17 @@ class _GradesPageState extends State<GradesPage> {
       child: SingleChildScrollView(
         child: Align(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 750.0),
-            padding: const EdgeInsets.all(8.0),
+            constraints: const BoxConstraints(maxWidth: 750),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: FutureBuilder<List>(
                       future: _futureMastery,
-                      builder: (context, snapshot) {
+                      builder: (final context, final snapshot) {
                         if (snapshot.hasError) return Text("${snapshot.error}");
                         if (snapshot.connectionState == ConnectionState.waiting)
                           return _GradesPageShimmer(scores: _scores);
@@ -427,7 +429,7 @@ class _GradesPageState extends State<GradesPage> {
                         _saveScores(scoreData.length);
 
                         final scores = scoreData
-                            .map((score) => MasteryScore.fromJson(score))
+                            .map((final score) => MasteryScore.fromJson(score))
                             .toList(growable: false);
                         return scoreData.isEmpty
                             ? const ListTile(
@@ -437,11 +439,11 @@ class _GradesPageState extends State<GradesPage> {
                                 shrinkWrap: true,
                                 physics: const ClampingScrollPhysics(),
                                 itemCount: scores.length,
-                                itemBuilder: (context, index) =>
+                                itemBuilder: (final context, final index) =>
                                     ExpandableTheme(
                                   data: ExpandableThemeData(
                                     inkWellBorderRadius:
-                                        BorderRadius.circular(4.0),
+                                        BorderRadius.circular(4),
                                     headerAlignment:
                                         ExpandablePanelHeaderAlignment.center,
                                     iconColor: theme.brightness.text,
@@ -471,10 +473,10 @@ class _GradesPageState extends State<GradesPage> {
     _loadScores();
   }
 
-  void _loadScores() async {
+  Future<void> _loadScores() async {
     final prefs = await SharedPreferences.getInstance();
 
-    setState(() => _scores = (prefs.getInt("scores") ?? _scores));
+    setState(() => _scores = prefs.getInt("scores") ?? _scores);
   }
 
   void _refresh() => setState(() {
@@ -491,11 +493,11 @@ class _GradesPageState extends State<GradesPage> {
           upcomingState.futureWork,
           missingState.futureWork,
         ])
-            .then((data) => _refreshController.refreshCompleted())
-            .catchError((error) => _refreshController.refreshFailed());
+            .then((final data) => _refreshController.refreshCompleted())
+            .catchError((final error) => _refreshController.refreshFailed());
       });
 
-  void _saveScores(int scores) async {
+  Future<void> _saveScores(final int scores) async {
     final prefs = await _prefs;
 
     await prefs.setInt("scores", _scores = scores);

@@ -11,7 +11,7 @@ final _prefs = SharedPreferences.getInstance();
 
 Future? _validated;
 
-Future<List<API>> get<API>(String api) async {
+Future<List<API>> get<API>(final String api) async {
   final prefs = await _prefs;
 
   final token = prefs.getString("token");
@@ -33,11 +33,12 @@ Future<List<API>> get<API>(String api) async {
     _validated = null;
     await validate(token!);
 
-    return await get(api);
+    return get(api);
   }
 }
 
-Future<LoginResponse> login(String username, String password) async {
+Future<LoginResponse> login(
+    final String username, final String password) async {
   final prefs = await _prefs;
 
   final loginRes = await http.post(
@@ -61,7 +62,7 @@ Future<void> logout() async {
   await prefs.setStringList("crisis", crisis);
 }
 
-Future<ValidateResponse> validate(String token) async {
+Future<ValidateResponse> validate(final String token) async {
   final prefs = await _prefs;
 
   final username = prefs.getString("username");
@@ -95,13 +96,14 @@ class LoginResponse {
   final String? token;
 
   const LoginResponse({
-    required this.success,
-    required this.type,
-    required this.message,
-    required this.token,
+    required final this.success,
+    required final this.type,
+    required final this.message,
+    required final this.token,
   });
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
+  factory LoginResponse.fromJson(final Map<String, dynamic> json) =>
+      LoginResponse(
         success: json["success"],
         type: json["type"],
         message: json["message"],
@@ -116,9 +118,12 @@ class ValidateResponse {
   final bool success;
   final String? username;
 
-  const ValidateResponse({required this.success, required this.username});
+  const ValidateResponse({
+    required final this.success,
+    required final this.username,
+  });
 
-  factory ValidateResponse.fromJson(Map<String, dynamic> json) =>
+  factory ValidateResponse.fromJson(final Map<String, dynamic> json) =>
       ValidateResponse(
         success: json["success"],
         username: json["username"],

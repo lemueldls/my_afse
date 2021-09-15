@@ -1,5 +1,5 @@
 import "dart:async";
-import "dart:math" as Math;
+import "dart:math";
 
 import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
@@ -20,11 +20,11 @@ class AttendanceData {
   final int columns;
 
   const AttendanceData({
-    required this.table,
-    required this.columns,
+    required final this.table,
+    required final this.columns,
   });
 
-  factory AttendanceData.parseData(String html) {
+  factory AttendanceData.parseData(final String html) {
     const colors = {
       "P": Colors.green,
       "E": Colors.grey,
@@ -35,16 +35,16 @@ class AttendanceData {
     final rows =
         parseHtmlDocument(html).querySelectorAll("#submission tr").skip(1);
 
-    final data =
-        rows.map((row) => (row.innerText.trim().split("\n").length - 4) / 2);
-    final columns = data.isNotEmpty ? data.reduce(Math.max).toInt() : 0;
+    final data = rows
+        .map((final row) => (row.innerText.trim().split("\n").length - 4) / 2);
+    final columns = data.isNotEmpty ? data.reduce(max).toInt() : 0;
 
-    final table = rows.map((row) {
+    final table = rows.map((final row) {
       final tds = row.querySelectorAll("td");
 
       final date = DateFormat("y-M-d").parse(tds.first.innerText);
 
-      final day = tds.sublist(3, columns + 3).map((td) {
+      final day = tds.sublist(3, columns + 3).map((final td) {
         final title = td.title!;
 
         if (title.isNotEmpty) {
@@ -77,7 +77,7 @@ class AttendanceData {
 }
 
 class AttendancePage extends StatefulWidget {
-  const AttendancePage({Key? key}) : super(key: key);
+  const AttendancePage({final Key? key}) : super(key: key);
 
   @override
   _AttendancePageState createState() => _AttendancePageState();
@@ -87,7 +87,7 @@ class Day {
   final DateTime date;
   final Iterable<Period?> data;
 
-  const Day({required this.date, required this.data});
+  const Day({required final this.date, required final this.data});
 
   @override
   toString() => "{ $date, $data }";
@@ -101,11 +101,11 @@ class Period {
   final String name;
 
   const Period({
-    required this.letter,
-    required this.color,
-    required this.title,
-    required this.teacher,
-    required this.name,
+    required final this.letter,
+    required final this.color,
+    required final this.title,
+    required final this.teacher,
+    required final this.name,
   });
 
   @override
@@ -116,10 +116,14 @@ class PeriodCell extends StatelessWidget {
   final Period? period;
   final DateTime date;
 
-  const PeriodCell(this.period, {required this.date});
+  const PeriodCell({
+    final Key? key,
+    required final this.period,
+    required final this.date,
+  }) : super(key: key);
 
   @override
-  build(context) {
+  build(final context) {
     final hasPeriod = period != null;
 
     return Material(
@@ -141,18 +145,18 @@ class PeriodCell extends StatelessWidget {
     );
   }
 
-  void _openDialog(BuildContext context) => showDialog(
+  void _openDialog(final BuildContext context) => showDialog(
         context: context,
-        builder: (context) {
+        builder: (final context) {
           final data = period!;
 
           return AlertDialog(
             title: Text(data.title),
             contentPadding: const EdgeInsets.only(
-              left: 24.0,
-              top: 8.0,
-              right: 24.0,
-              bottom: 24.0,
+              left: 24,
+              top: 8,
+              right: 24,
+              bottom: 24,
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -169,7 +173,7 @@ class PeriodCell extends StatelessWidget {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: const EdgeInsets.only(top: 8),
                   child: Text(DateFormat.yMMMMEEEEd().format(date)),
                 ),
               ],
@@ -185,10 +189,11 @@ class TableBody extends StatefulWidget {
   final int columns;
 
   const TableBody({
-    required this.scrollController,
-    required this.table,
-    required this.columns,
-  });
+    final Key? key,
+    required final this.scrollController,
+    required final this.table,
+    required final this.columns,
+  }) : super(key: key);
 
   @override
   _TableBodyState createState() => _TableBodyState();
@@ -199,18 +204,19 @@ class TableCell extends StatelessWidget {
   final double width;
   final Alignment alignment;
 
-  const TableCell(
-    this.value, {
-    this.width = cellSize,
-    this.alignment = Alignment.center,
-  });
+  const TableCell({
+    final Key? key,
+    required final this.value,
+    final this.width = cellSize,
+    final this.alignment = Alignment.center,
+  }) : super(key: key);
 
   @override
-  build(context) => Container(
+  build(final context) => Container(
         width: width,
         height: cellSize,
         alignment: alignment,
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Text(value),
       );
 }
@@ -219,26 +225,31 @@ class TableHead extends StatelessWidget {
   final ScrollController scrollController;
   final int columns;
 
-  const TableHead({required this.scrollController, required this.columns});
+  const TableHead({
+    final Key? key,
+    required final this.scrollController,
+    required final this.columns,
+  }) : super(key: key);
 
   @override
-  build(context) => Container(
+  build(final context) => Container(
         height: cellSize,
         decoration: const BoxDecoration(
           border: Border(
-            bottom: BorderSide(width: 1.0, color: Colors.grey),
+            bottom: BorderSide(width: 1, color: Colors.grey),
           ),
         ),
         child: Row(
           children: [
-            const TableCell("Date", width: dateWidth),
+            const TableCell(value: "Date", width: dateWidth),
             Expanded(
               child: ListView.builder(
                 controller: scrollController,
                 physics: const ClampingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 itemCount: columns,
-                itemBuilder: (context, index) => TableCell(index.toString()),
+                itemBuilder: (final context, final index) =>
+                    TableCell(value: index.toString()),
               ),
             ),
           ],
@@ -249,11 +260,11 @@ class TableHead extends StatelessWidget {
 class _AttendancePageShimmer extends StatelessWidget {
   final int columns;
 
-  const _AttendancePageShimmer({Key? key, required this.columns})
+  const _AttendancePageShimmer({final Key? key, required final this.columns})
       : super(key: key);
 
   @override
-  build(context) {
+  build(final context) {
     final size = MediaQuery.of(context).size;
 
     final width = size.width ~/ cellSize;
@@ -263,7 +274,7 @@ class _AttendancePageShimmer extends StatelessWidget {
         ? const ListTile(title: CustomShimmer())
         : ListView.builder(
             itemCount: height,
-            itemBuilder: (context, index) => SizedBox(
+            itemBuilder: (final context, final index) => SizedBox(
               height: cellSize,
               width: size.width,
               child: Row(
@@ -271,16 +282,17 @@ class _AttendancePageShimmer extends StatelessWidget {
                   const SizedBox(
                     width: dateWidth,
                     child: CustomShimmer(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      padding: EdgeInsets.symmetric(horizontal: 8),
                     ),
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: Math.min(columns, width),
+                      itemCount: min(columns, width),
                       scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) => const SizedBox(
+                      itemBuilder: (final context, final index) =>
+                          const SizedBox(
                         width: cellSize,
-                        child: Center(child: CustomShimmer(width: 16.0)),
+                        child: Center(child: CustomShimmer(width: 16)),
                       ),
                     ),
                   ),
@@ -305,13 +317,13 @@ class _AttendancePageState extends State<AttendancePage> {
   late Future<AttendanceData> _futureAttendance = _fetchAttendance();
 
   @override
-  build(context) => SmartRefresher(
+  build(final context) => SmartRefresher(
         physics: const BouncingScrollPhysics(),
         controller: _refreshController,
         onRefresh: _refresh,
         child: FutureBuilder<AttendanceData>(
           future: _futureAttendance,
-          builder: (context, snapshot) {
+          builder: (final context, final snapshot) {
             if (snapshot.hasError) return Text("${snapshot.error}");
             if (snapshot.connectionState == ConnectionState.waiting)
               return _AttendancePageShimmer(columns: _columns);
@@ -376,21 +388,21 @@ class _AttendancePageState extends State<AttendancePage> {
       throw Exception("Failed to load attendance");
   }
 
-  void _loadColumns() async {
+  Future<void> _loadColumns() async {
     final prefs = await SharedPreferences.getInstance();
 
-    setState(() => _columns = (prefs.getInt("columns") ?? _columns));
+    setState(() => _columns = prefs.getInt("columns") ?? _columns);
   }
 
   void _refresh() => setState(() {
         _futureAttendance = _fetchAttendance();
 
         _futureAttendance
-            .then((data) => _refreshController.refreshCompleted())
-            .catchError((error) => _refreshController.refreshFailed());
+            .then((final data) => _refreshController.refreshCompleted())
+            .catchError((final error) => _refreshController.refreshFailed());
       });
 
-  void _saveColumns(int columns) async {
+  Future<void> _saveColumns(final int columns) async {
     final prefs = await _prefs;
 
     await prefs.setInt("columns", _columns = columns);
@@ -403,7 +415,7 @@ class _TableBodyState extends State<TableBody> {
   late final ScrollController _restColumnsController = _controllers.addAndGet();
 
   @override
-  build(context) {
+  build(final context) {
     final table = widget.table;
     final columns = widget.columns;
 
@@ -414,7 +426,7 @@ class _TableBodyState extends State<TableBody> {
         Container(
           decoration: const BoxDecoration(
             border: Border(
-              right: BorderSide(width: 1.0, color: Colors.grey),
+              right: BorderSide(width: 1, color: Colors.grey),
             ),
           ),
           width: dateWidth,
@@ -422,11 +434,11 @@ class _TableBodyState extends State<TableBody> {
             controller: _firstColumnController,
             physics: const ClampingScrollPhysics(),
             itemCount: length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final date = DateFormat.MMMEd().format(table[index].date);
 
               return TableCell(
-                date,
+                value: date,
                 alignment: Alignment.centerLeft,
               );
             },
@@ -443,12 +455,15 @@ class _TableBodyState extends State<TableBody> {
                 controller: _restColumnsController,
                 physics: const ClampingScrollPhysics(),
                 itemCount: length,
-                itemBuilder: (context, index) {
+                itemBuilder: (final context, final index) {
                   final row = table[index];
 
                   return Row(
                     children: row.data
-                        .map((period) => PeriodCell(period, date: row.date))
+                        .map(
+                          (final period) =>
+                              PeriodCell(period: period, date: row.date),
+                        )
                         .toList(growable: false),
                   );
                 },

@@ -5,5 +5,5 @@ extension MaybeList<E> on List<E> {
   //   return this.any((element) => test(index++, element));
   // }
 
-  E? tryGet(int index) => asMap().containsKey(index) ? this[index] : null;
+  E? tryGet(final int index) => asMap().containsKey(index) ? this[index] : null;
 }

@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 
-import '../utils/updater.dart' as updater;
-import "../utils/url.dart";
+import "../utils/updater.dart" as updater;
 import "drawer.dart";
 
 class PageScaffold extends StatelessWidget {
@@ -9,13 +8,13 @@ class PageScaffold extends StatelessWidget {
   final Widget page;
 
   const PageScaffold({
-    Key? key,
-    required this.title,
-    required this.page,
+    final Key? key,
+    required final this.title,
+    required final this.page,
   }) : super(key: key);
 
   @override
-  build(context) {
+  build(final context) {
     _checkUpdates(context);
 
     final _scaffoldKey = LabeledGlobalKey<ScaffoldState>("Scaffold");
@@ -41,7 +40,7 @@ class PageScaffold extends StatelessWidget {
     );
   }
 
-  void _checkUpdates(BuildContext context) async {
+  Future<void> _checkUpdates(final BuildContext context) async {
     await updater.checkLatest();
 
     if (!updater.prompt || updater.dismissed) return;

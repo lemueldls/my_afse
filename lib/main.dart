@@ -23,7 +23,7 @@ Future<void> main() async {
 }
 
 class AppBuilder extends StatefulWidget {
-  const AppBuilder({Key? key}) : super(key: key);
+  const AppBuilder({final Key? key}) : super(key: key);
 
   @override
   _AppBuilderState createState() => _AppBuilderState();
@@ -35,9 +35,9 @@ class _AppBuilderState extends State<AppBuilder> {
   final flutterShortcuts = FlutterShortcuts();
 
   @override
-  build(context) => StreamBuilder<User?>(
+  build(final context) => StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
+        builder: (final context, final snapshot) {
           if (snapshot.hasError) return Text("${snapshot.error}");
           if (snapshot.connectionState == ConnectionState.waiting)
             return MaterialApp(
@@ -51,7 +51,7 @@ class _AppBuilderState extends State<AppBuilder> {
             );
 
           return ChangeNotifierProvider(
-            create: (context) => ThemeChanger(),
+            create: (final context) => ThemeChanger(),
             child: RefreshConfiguration(
               headerBuilder: () => const WaterDropMaterialHeader(),
               enableRefreshVibrate: true,
@@ -68,11 +68,10 @@ class _AppBuilderState extends State<AppBuilder> {
     _loadShortcuts();
   }
 
-  void _loadShortcuts() {
-    flutterShortcuts.initialize();
-    flutterShortcuts.listenAction((page) => setState(() => _page = page));
-
-    flutterShortcuts.setShortcutItems(
+  void _loadShortcuts() => flutterShortcuts
+    ..initialize()
+    ..listenAction((final page) => setState(() => _page = page))
+    ..setShortcutItems(
       shortcutItems: const [
         // FlutterShortcutItem(
         //   id: "settings",
@@ -112,5 +111,4 @@ class _AppBuilderState extends State<AppBuilder> {
         ),
       ],
     );
-  }
 }

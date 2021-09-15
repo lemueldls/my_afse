@@ -3,9 +3,9 @@ library my_afse.update;
 import "dart:io";
 
 import "package:http/http.dart" as http;
+import "package:ota_update/ota_update.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:version/version.dart";
-import "package:ota_update/ota_update.dart";
 
 var dismissed = false;
 var prompt = false;

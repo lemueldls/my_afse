@@ -12,7 +12,7 @@ import "../widgets/events.dart";
 import "../widgets/news.dart";
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({final Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   String? _greeting;
 
   @override
-  build(context) {
+  build(final context) {
     final textTheme = Theme.of(context).textTheme;
 
     return SmartRefresher(
@@ -40,13 +40,13 @@ class _HomePageState extends State<HomePage> {
       child: SingleChildScrollView(
         child: Align(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 750.0),
-            padding: const EdgeInsets.all(8.0),
+            constraints: const BoxConstraints(maxWidth: 750),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
+                  padding: const EdgeInsets.only(top: 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -57,20 +57,19 @@ class _HomePageState extends State<HomePage> {
                                 style: textTheme.headline4,
                                 textAlign: TextAlign.center,
                               )
-                            : const CustomShimmer(
-                                padding: EdgeInsets.all(16.0)),
+                            : const CustomShimmer(padding: EdgeInsets.all(16)),
                       ),
                     ],
                   ),
                 ),
                 const Divider(),
                 Padding(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(4),
                   child: Text("Events", style: textTheme.headline6),
                 ),
                 EventCards(key: _eventsKey),
                 Padding(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(4),
                   child: Text("News", style: textTheme.headline6),
                 ),
                 NewsCards(key: _newsKey),
@@ -104,11 +103,11 @@ class _HomePageState extends State<HomePage> {
     newsState.refresh();
 
     Future.wait([eventsState.futureEvents, newsState.futureNews])
-        .then((data) => _refreshController.refreshCompleted())
-        .catchError((error) => _refreshController.refreshFailed());
+        .then((final data) => _refreshController.refreshCompleted())
+        .catchError((final error) => _refreshController.refreshFailed());
   }
 
-  void _updateGreeting() async {
+  Future<void> _updateGreeting() async {
     final now = DateTime.now();
 
     final prefs = await _prefs;
@@ -154,7 +153,8 @@ class _HomePageState extends State<HomePage> {
     final hour = now.hour;
 
     final keys = messages.keys;
-    final message = keys.where((time) => time >= hour).toList(growable: false);
+    final message =
+        keys.where((final time) => time >= hour).toList(growable: false);
 
     final next = DateTime(now.year, now.month, now.day, message.tryGet(1) ?? 24)
         .difference(now);

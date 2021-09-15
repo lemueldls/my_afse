@@ -1,4 +1,4 @@
-import "dart:math" as Math;
+import "dart:math";
 
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
@@ -20,16 +20,16 @@ class News {
   final String url;
 
   const News({
-    required this.title,
-    required this.description,
-    required this.image,
-    required this.date,
-    required this.url,
+    required final this.title,
+    required final this.description,
+    required final this.image,
+    required final this.date,
+    required final this.url,
   });
 }
 
 class NewsCards extends StatefulWidget {
-  const NewsCards({Key? key}) : super(key: key);
+  const NewsCards({final Key? key}) : super(key: key);
 
   @override
   NewsCardsState createState() => NewsCardsState();
@@ -43,7 +43,7 @@ class NewsCardsState extends State<NewsCards> {
   late Future<NewsData> futureNews = _fetchNews();
 
   @override
-  build(context) {
+  build(final context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -53,13 +53,13 @@ class NewsCardsState extends State<NewsCards> {
 
     return FutureBuilder<NewsData>(
       future: futureNews,
-      builder: (context, snapshot) {
+      builder: (final context, final snapshot) {
         if (snapshot.hasError) return Text("${snapshot.error}");
         if (snapshot.connectionState == ConnectionState.waiting)
           return _NewsCardShimmer(news: _news);
 
         final news = snapshot.data!.news;
-        final length = Math.min(news.length, 3);
+        final length = min(news.length, 3);
 
         _saveNews(length);
 
@@ -74,7 +74,7 @@ class NewsCardsState extends State<NewsCards> {
                 shrinkWrap: true,
                 physics: const ClampingScrollPhysics(),
                 itemCount: length,
-                itemBuilder: (context, index) {
+                itemBuilder: (final context, final index) {
                   final item = news[index];
 
                   final description = item.description;
@@ -83,10 +83,10 @@ class NewsCardsState extends State<NewsCards> {
                   return Card(
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        left: 16.0,
-                        top: 16.0,
-                        right: 16.0,
-                        bottom: 8.0,
+                        left: 16,
+                        top: 16,
+                        right: 16,
+                        bottom: 8,
                       ),
                       child: Column(
                         children: [
@@ -104,7 +104,7 @@ class NewsCardsState extends State<NewsCards> {
                                     description != null
                                         ? Linkify(
                                             text: description,
-                                            onOpen: (link) =>
+                                            onOpen: (final link) =>
                                                 launchURL(link.url),
                                             linkStyle: link,
                                             style: TextStyle(
@@ -123,10 +123,11 @@ class NewsCardsState extends State<NewsCards> {
                                       child: CachedNetworkImage(
                                         alignment: Alignment.topCenter,
                                         imageUrl: image,
-                                        placeholder: (context, url) =>
-                                            const CustomShimmer(
-                                          width: 75.0,
-                                          height: 40.0,
+                                        placeholder:
+                                            (final context, final url) =>
+                                                const CustomShimmer(
+                                          width: 75,
+                                          height: 40,
                                           radius: 0,
                                         ),
                                       ),
@@ -180,13 +181,13 @@ class NewsCardsState extends State<NewsCards> {
       throw Exception("Failed to load news");
   }
 
-  void _loadNews() async {
+  Future<void> _loadNews() async {
     final prefs = await SharedPreferences.getInstance();
 
-    setState(() => _news = (prefs.getInt("news") ?? _news));
+    setState(() => _news = prefs.getInt("news") ?? _news);
   }
 
-  void _saveNews(int news) async {
+  Future<void> _saveNews(final int news) async {
     final prefs = await _prefs;
 
     await prefs.setInt("news", _news = news);
@@ -196,17 +197,17 @@ class NewsCardsState extends State<NewsCards> {
 class NewsData {
   final List<News> news;
 
-  const NewsData({required this.news});
+  const NewsData({required final this.news});
 
-  factory NewsData.parseData(String data) {
+  factory NewsData.parseData(final String data) {
     final now = DateTime.now();
 
     return NewsData(
       news: RssFeed.parse(data)
           .items!
-          .where((item) => now.difference(item.pubDate!).inDays <= 31)
+          .where((final item) => now.difference(item.pubDate!).inDays <= 31)
           .map(
-            (item) => News(
+            (final item) => News(
               title: item.title!,
               description: item.description,
               date: DateFormat.MMMMd().format(item.pubDate!),
@@ -222,18 +223,19 @@ class NewsData {
 class _NewsCardShimmer extends StatelessWidget {
   final int news;
 
-  const _NewsCardShimmer({Key? key, required this.news}) : super(key: key);
+  const _NewsCardShimmer({final Key? key, required final this.news})
+      : super(key: key);
 
   @override
-  build(context) => ListView.builder(
+  build(final context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
-        itemCount: Math.max(news, 1),
-        itemBuilder: (context, index) => Card(
+        itemCount: max(news, 1),
+        itemBuilder: (final context, final index) => Card(
           child: news == 0
               ? const ListTile(title: CustomShimmer())
               : Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -242,44 +244,44 @@ class _NewsCardShimmer extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
+                              padding: const EdgeInsets.only(right: 8),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: const [
                                   CustomShimmer(
-                                    width: 200.0,
-                                    padding: EdgeInsets.only(bottom: 6.0),
+                                    width: 200,
+                                    padding: EdgeInsets.only(bottom: 6),
                                   ),
                                   CustomShimmer(
-                                    height: 12.0,
-                                    padding: EdgeInsets.only(bottom: 4.0),
+                                    height: 12,
+                                    padding: EdgeInsets.only(bottom: 4),
                                   ),
                                   CustomShimmer(
-                                    height: 12.0,
-                                    padding: EdgeInsets.only(bottom: 4.0),
+                                    height: 12,
+                                    padding: EdgeInsets.only(bottom: 4),
                                   ),
                                   CustomShimmer(
-                                    height: 12.0,
-                                    padding: EdgeInsets.only(bottom: 8.0),
+                                    height: 12,
+                                    padding: EdgeInsets.only(bottom: 8),
                                   ),
                                 ],
                               ),
                             ),
                           ),
                           const CustomShimmer(
-                            width: 75.0,
-                            height: 40.0,
+                            width: 75,
+                            height: 40,
                             radius: 0,
                           ),
                         ],
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 3.0),
+                        padding: const EdgeInsets.only(top: 3),
                         child: Row(
                           children: const [
-                            CustomShimmer(width: 200.0),
+                            CustomShimmer(width: 200),
                             Spacer(),
-                            CustomShimmer(width: 100.0, height: 32.0)
+                            CustomShimmer(width: 100, height: 32)
                           ],
                         ),
                       )

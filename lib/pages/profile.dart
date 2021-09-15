@@ -13,14 +13,14 @@ class Enrollment {
   final String? end;
 
   const Enrollment({
-    required this.start,
-    required this.end,
+    required final this.start,
+    required final this.end,
   });
 
-  factory Enrollment.fromJson(List data) {
+  factory Enrollment.fromJson(final List data) {
     final enrollment = data[0];
 
-    format(String date) =>
+    format(final String date) =>
         DateFormat.yMMMEd().format(DateFormat("y-M-d").parse(date));
 
     final end = enrollment["end_date"];
@@ -33,7 +33,7 @@ class Enrollment {
 }
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({final Key? key}) : super(key: key);
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -47,30 +47,28 @@ class Role {
   final String schedule;
 
   const Role({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.type,
-    required this.schedule,
+    required final this.id,
+    required final this.name,
+    required final this.email,
+    required final this.type,
+    required final this.schedule,
   });
 
-  factory Role.fromJson(Map<String, dynamic> role) {
-    return Role(
-      id: role["id"],
-      name: role["nickname"],
-      email: role["email"],
-      type: role["type"],
-      schedule: role["schedule_name"],
-    );
-  }
+  factory Role.fromJson(final Map<String, dynamic> role) => Role(
+        id: role["id"],
+        name: role["nickname"],
+        email: role["email"],
+        type: role["type"],
+        schedule: role["schedule_name"],
+      );
 }
 
 class School {
   final String name;
 
-  const School({required this.name});
+  const School({required final this.name});
 
-  factory School.fromJson(List data) {
+  factory School.fromJson(final List data) {
     final school = data[0];
 
     return School(name: school["name"]);
@@ -85,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late Future<List> _futureRole = api.get("role");
 
   @override
-  build(context) {
+  build(final context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -103,16 +101,16 @@ class _ProfilePageState extends State<ProfilePage> {
       child: SingleChildScrollView(
         child: Center(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 500.0),
-            padding: const EdgeInsets.all(8.0),
+            constraints: const BoxConstraints(maxWidth: 500),
+            padding: const EdgeInsets.all(8),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4.0),
+                      padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         "${student.firstName} ${student.lastName}",
                         style: textTheme.headline6,
@@ -120,15 +118,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Text(student.email, style: title),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         children: [
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
+                              padding: const EdgeInsets.only(right: 16),
                               child: FutureBuilder<List>(
                                 future: _futureSchool,
-                                builder: (context, snapshot) {
+                                builder: (final context, final snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting)
                                     return const CustomShimmer();
@@ -156,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const Text("Enrollment: ", style: bold),
                         FutureBuilder<List>(
                           future: _futureEnrollment,
-                          builder: (context, snapshot) {
+                          builder: (final context, final snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting)
                               return const Expanded(child: CustomShimmer());
@@ -173,17 +171,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
+                      padding: const EdgeInsets.only(top: 4),
                       child: FutureBuilder<List>(
                         future: _futureRole,
-                        builder: (context, snapshot) {
+                        builder: (final context, final snapshot) {
                           final subtitle = textTheme.bodyText2!.copyWith(
                             color: textTheme.caption!.color,
                           );
 
                           final adviserText = Text("Adviser", style: subtitle);
                           final followersText = Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
+                            padding: const EdgeInsets.only(top: 8),
                             child: Text("Followers", style: title),
                           );
 
@@ -192,25 +190,24 @@ class _ProfilePageState extends State<ProfilePage> {
                           final teacher = Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: const [
-                              CustomShimmer(width: 90.0),
-                              CustomShimmer(width: 65.0),
+                              CustomShimmer(width: 90),
+                              CustomShimmer(width: 65),
                             ],
                           );
                           final sub = Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
+                            padding: const EdgeInsets.only(top: 4),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: const [
-                                CustomShimmer(width: 150.0, height: 14.0),
-                                CustomShimmer(width: 65.0, height: 14.0),
+                                CustomShimmer(width: 150, height: 14),
+                                CustomShimmer(width: 65, height: 14),
                               ],
                             ),
                           );
 
                           final List<Widget> children = [
                             Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 8.0, bottom: 1.0),
+                              padding: const EdgeInsets.only(top: 8, bottom: 1),
                               child: teacher,
                             ),
                             adviserText,
@@ -222,13 +219,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             for (int i = 0; i < _followers; i++)
                               children.add(Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 8),
                                 child: Column(children: [teacher, sub]),
                               ));
 
                             children.add(
                               const Padding(
-                                padding: EdgeInsets.only(bottom: 2.0),
+                                padding: EdgeInsets.only(bottom: 2),
                               ),
                             );
                           }
@@ -240,16 +237,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               children: children,
                             );
 
-                          final roles =
-                              snapshot.data!.map((role) => Role.fromJson(role));
+                          final roles = snapshot.data!
+                              .map((final role) => Role.fromJson(role));
 
                           final adviser = roles.firstWhere(
-                            (role) => role.id == student.adviser,
+                            (final role) => role.id == student.adviser,
                           );
                           final followers = student.followers
                               .map(
-                                (follower) => roles
-                                    .firstWhere((role) => role.id == follower),
+                                (final follower) => roles.firstWhere(
+                                    (final role) => role.id == follower),
                               )
                               .toList(growable: false);
 
@@ -257,7 +254,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               subtitle.copyWith(color: theme.primaryColor);
 
                           return Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
+                            padding: const EdgeInsets.only(top: 4),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -273,7 +270,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   children: [
                                     Linkify(
                                       text: adviser.email,
-                                      onOpen: (link) => launchURL(link.url),
+                                      onOpen: (final link) =>
+                                          launchURL(link.url),
                                       linkStyle: link,
                                     ),
                                     const Spacer(),
@@ -285,11 +283,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                   shrinkWrap: true,
                                   physics: const ClampingScrollPhysics(),
                                   itemCount: followers.length,
-                                  itemBuilder: (context, index) {
+                                  itemBuilder: (final context, final index) {
                                     final follower = followers[index];
 
                                     return Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
+                                      padding: const EdgeInsets.only(top: 4),
                                       child: Column(
                                         children: [
                                           Row(
@@ -303,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             children: [
                                               Linkify(
                                                 text: follower.email,
-                                                onOpen: (link) =>
+                                                onOpen: (final link) =>
                                                     launchURL(link.url),
                                                 linkStyle: link,
                                               ),
@@ -343,7 +341,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _futureEnrollment,
           _futureRole,
         ])
-            .then((data) => _refreshController.refreshCompleted())
-            .catchError((error) => _refreshController.refreshFailed());
+            .then((final data) => _refreshController.refreshCompleted())
+            .catchError((final error) => _refreshController.refreshFailed());
       });
 }

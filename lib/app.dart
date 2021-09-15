@@ -11,15 +11,18 @@ class App extends StatelessWidget {
   final bool loggedIn;
   final String page;
 
-  const App({Key? key, required this.loggedIn, required this.page})
-      : super(key: key);
+  const App({
+    final Key? key,
+    required final this.loggedIn,
+    required final this.page,
+  }) : super(key: key);
 
   @override
-  build(context) {
+  build(final context) {
     final routes = pageRoutes.map(
-      (key, route) => MapEntry(
+      (final key, final route) => MapEntry(
         key,
-        (BuildContext context) {
+        (final BuildContext context) {
           final page = route.page;
 
           return route.wrap
@@ -50,10 +53,10 @@ class App extends StatelessWidget {
         ),
         switchTheme: SwitchThemeData(
           thumbColor: MaterialStateProperty.resolveWith(
-            (states) => _getColor(states, color),
+            (final states) => _getColor(states, color),
           ),
           trackColor: MaterialStateProperty.resolveWith(
-            (states) => _getColor(states, color)?.shade600,
+            (final states) => _getColor(states, color)?.shade600,
           ),
         ),
       ),
@@ -63,7 +66,10 @@ class App extends StatelessWidget {
     );
   }
 
-  MaterialColor? _getColor(Set<MaterialState> states, MaterialColor color) {
+  MaterialColor? _getColor(
+    final Set<MaterialState> states,
+    final MaterialColor color,
+  ) {
     const interactiveStates = {
       MaterialState.pressed,
       MaterialState.selected,

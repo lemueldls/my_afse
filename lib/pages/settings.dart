@@ -10,7 +10,7 @@ import "../utils/settings.dart";
 import "../utils/theme.dart";
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({final Key? key}) : super(key: key);
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -25,7 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late Color _color;
 
   @override
-  build(context) {
+  build(final context) {
     final theme = Provider.of<ThemeChanger>(context);
 
     _dark = theme.dark;
@@ -36,10 +36,10 @@ class _SettingsPageState extends State<SettingsPage> {
       fontWeight: FontWeight.bold,
     );
     const titlePadding = EdgeInsets.only(
-      top: 16.0,
-      left: 16.0,
-      right: 16.0,
-      bottom: 8.0,
+      top: 16,
+      left: 16,
+      right: 16,
+      bottom: 8,
     );
 
     final pageItems = pageRoutes.keys.toList();
@@ -47,11 +47,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Align(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 750.0),
+        constraints: const BoxConstraints(maxWidth: 750),
         child: SettingsList(
           backgroundColor: Colors.transparent,
           physics: const BouncingScrollPhysics(),
-          contentPadding: const EdgeInsets.all(8.0),
+          contentPadding: const EdgeInsets.all(8),
           sections: [
             SettingsSection(
               title: "Theme",
@@ -62,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: "Dark Mode",
                   leading: const Icon(Icons.dark_mode),
                   switchValue: _dark,
-                  onToggle: (dark) => setState(() {
+                  onToggle: (final dark) => setState(() {
                     theme.setDark(_dark = dark);
                   }),
                 ),
@@ -70,14 +70,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: "Accent Color",
                   leading: const Icon(Icons.palette),
                   trailing: Container(
-                    width: 64.0,
-                    height: 32.0,
+                    width: 64,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: _color,
-                      borderRadius: BorderRadius.circular(4.0),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  onPressed: (context) => _selectColor(context, theme),
+                  onPressed: (final context) => _selectColor(context, theme),
                 ),
               ],
             ),
@@ -91,14 +91,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   leading: const Icon(Icons.pages),
                   trailing: DropdownButton(
                     value: _page,
-                    onChanged: (String? page) async {
+                    onChanged: (final String? page) async {
                       setState(() => _page = page!);
 
                       final prefs = await _prefs;
                       prefs.setString("page", page!);
                     },
                     items: pageItems.map(
-                      (route) {
+                      (final route) {
                         final page = pageRoutes[route]!;
 
                         return DropdownMenuItem(
@@ -106,7 +106,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           child: Row(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(right: 16.0),
+                                padding: const EdgeInsets.only(right: 16),
                                 child: page.icon!,
                               ),
                               Text(page.title),
@@ -127,7 +127,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsTile(
                   title: "About",
                   leading: const Icon(Icons.info),
-                  onPressed: (context) async {
+                  onPressed: (final context) async {
                     final info = await PackageInfo.fromPlatform();
 
                     showAboutDialog(
@@ -135,8 +135,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       applicationVersion: info.version,
                       applicationIcon: Image.asset(
                         "assets/icon/icon.png",
-                        width: 48.0,
-                        height: 48.0,
+                        width: 48,
+                        height: 48,
                       ),
                       children: [
                         RichText(
@@ -166,19 +166,19 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _selectColor(BuildContext context, ThemeChanger theme) {
+  void _selectColor(final BuildContext context, final ThemeChanger theme) {
     var pickerColor = _color;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        actionsPadding: const EdgeInsets.only(right: 6.0),
+      builder: (final context) => AlertDialog(
+        actionsPadding: const EdgeInsets.only(right: 6),
         // title: const Text("Pick a color!""),
         content: SingleChildScrollView(
           child: MaterialPicker(
             enableLabel: true,
             pickerColor: pickerColor,
-            onColorChanged: (color) => pickerColor = color,
+            onColorChanged: (final color) => pickerColor = color,
           ),
         ),
         actions: [

@@ -21,7 +21,7 @@ Future<Map<String, dynamic>?> updateStudent() async {
   else
     api.validate(token);
 
-  String? localStudent = prefs.getString("student");
+  final localStudent = prefs.getString("student");
   if (localStudent != null) {
     final data = jsonDecode(localStudent);
     student = Student.fromJson(data);
@@ -29,7 +29,7 @@ Future<Map<String, dynamic>?> updateStudent() async {
     return data;
   }
 
-  return await fetchStudent();
+  return fetchStudent();
 }
 
 Future<Map<String, dynamic>> fetchStudent() async {
@@ -60,23 +60,23 @@ class Student {
   // final Map annotations;
 
   const Student({
-    required this.modified,
-    required this.school,
-    required this.id,
-    required this.externalId,
-    required this.label,
-    required this.firstName,
-    required this.lastName,
-    required this.adviser,
-    required this.followers,
-    required this.officialClass,
-    required this.status,
-    required this.email,
-    // required this.sections,
-    // required this.annotations,
+    required final this.modified,
+    required final this.school,
+    required final this.id,
+    required final this.externalId,
+    required final this.label,
+    required final this.firstName,
+    required final this.lastName,
+    required final this.adviser,
+    required final this.followers,
+    required final this.officialClass,
+    required final this.status,
+    required final this.email,
+    // required final this.sections,
+    // required final this.annotations,
   });
 
-  factory Student.fromJson(Map<String, dynamic> json) => Student(
+  factory Student.fromJson(final Map<String, dynamic> json) => Student(
         modified: DateFormat.yMMMEd().add_jm().format(
               DateFormat("yyyy-MM-ddTHH:mm:ss").parseUtc(
                 json["time_modified"],

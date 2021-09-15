@@ -18,7 +18,7 @@ class ThemeChanger extends ChangeNotifier {
   MaterialColor get color => _color;
   bool get dark => _dark;
 
-  Future<void> setColor(Color color) async {
+  Future<void> setColor(final Color color) async {
     _color = color.material;
 
     notifyListeners();
@@ -29,7 +29,7 @@ class ThemeChanger extends ChangeNotifier {
     await updateSettings();
   }
 
-  Future<void> setDark(bool dark) async {
+  Future<void> setDark(final bool dark) async {
     _dark = dark;
 
     notifyListeners();

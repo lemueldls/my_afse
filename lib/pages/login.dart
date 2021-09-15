@@ -9,7 +9,7 @@ import "../utils/settings.dart";
 import "../utils/student.dart";
 
 class LoginPage extends StatefulWidget {
-  const LoginPage();
+  const LoginPage({final Key? key}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   String _error = "";
   bool _loading = false;
 
-  Future<void> authencate(String username, String password) async {
+  Future<void> authencate(final String username, final String password) async {
     final student = await fetchStudent();
 
     final id = student["id"].toString();
@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           _error = error.message!;
           break;
       }
-    } catch (error) {
+    } on Error catch (error) {
       _error = error.toString();
     }
 
@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  build(context) {
+  build(final context) {
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -85,12 +85,12 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           child: SizedBox(
-            width: 375.0,
+            width: 375,
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 8.0,
-                  horizontal: 16.0,
+                  vertical: 8,
+                  horizontal: 16,
                 ),
                 child: Form(
                   key: _formKey,
@@ -98,12 +98,12 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
+                        padding: const EdgeInsets.only(top: 8, bottom: 16),
                         child: Row(
                           children: [
                             Padding(
                               padding: const EdgeInsets.only(
-                                right: 16.0,
+                                right: 16,
                               ),
                               child: Image.asset(
                                 "assets/img/jumprope.webp",
@@ -119,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
+                        padding: const EdgeInsets.only(bottom: 8),
                         child: TextFormField(
                           controller: _emailFilter,
                           decoration: const InputDecoration(
@@ -128,13 +128,13 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
-                          onFieldSubmitted: (v) => _nextFocus(context),
+                          onFieldSubmitted: (final _) => _nextFocus(context),
                           validator: _validateEmail,
                         ),
                       ),
 
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
+                        padding: const EdgeInsets.only(bottom: 16),
                         child: TextFormField(
                           controller: _passwordFilter,
                           obscureText: true,
@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           keyboardType: TextInputType.visiblePassword,
                           textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (v) => _nextFocus(context),
+                          onFieldSubmitted: (final _) => _nextFocus(context),
                           validator: _validatePassword,
                         ),
                       ),
@@ -161,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                                   width: 25,
                                   height: 25,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 3.0,
+                                    strokeWidth: 3,
                                     valueColor:
                                         AlwaysStoppedAnimation(Colors.white),
                                   ),
@@ -176,11 +176,11 @@ class _LoginPageState extends State<LoginPage> {
                       //     mainAxisAlignment: MainAxisAlignment.center,
                       //     children: [
                       //       Padding(
-                      //         padding: const EdgeInsets.only(right: 24.0),
+                      //         padding: const EdgeInsets.only(right: 24),
                       //         child: Image.asset(
                       //           "assets/img/google.png",
-                      //           width: 18.0,
-                      //           height: 18.0,
+                      //           width: 18,
+                      //           height: 18,
                       //         ),
                       //       ),
                       //       const Text(
@@ -244,13 +244,14 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = false);
   }
 
-  void _nextFocus(BuildContext context) => _email.isEmpty && _password.isEmpty
-      ? FocusScope.of(context).requestFocus(_focus)
-      : _login();
+  void _nextFocus(final BuildContext context) =>
+      _email.isEmpty && _password.isEmpty
+          ? FocusScope.of(context).requestFocus(_focus)
+          : _login();
 
   void _passwordListen() => _password = _passwordFilter.text;
 
-  String? _validateEmail(String? value) {
+  String? _validateEmail(final String? value) {
     if (value == null || value.isEmpty) return "Please enter your email";
 
     final email = value.toLowerCase();
@@ -262,7 +263,7 @@ class _LoginPageState extends State<LoginPage> {
       return "This is not a valid AFSE email";
   }
 
-  String? _validatePassword(String? value) {
+  String? _validatePassword(final String? value) {
     if (value == null || value.isEmpty) return "Please enter your password";
   }
 }

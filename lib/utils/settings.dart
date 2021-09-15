@@ -40,8 +40,8 @@ class Settings {
   final bool dark;
 
   const Settings({
-    required this.page,
-    required this.color,
-    required this.dark,
+    required final this.page,
+    required final this.color,
+    required final this.dark,
   });
 }

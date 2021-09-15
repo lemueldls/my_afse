@@ -2,7 +2,7 @@ library my_afse.url;
 
 import "package:url_launcher/url_launcher.dart";
 
-void launchURL(String url) async {
+Future<void> launchURL(final String url) async {
   if (await canLaunch(url)) {
     final view = url.startsWith("http");
 

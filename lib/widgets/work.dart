@@ -14,7 +14,7 @@ import "../utils/url.dart";
 class WorkCard extends StatefulWidget {
   final String type;
 
-  const WorkCard({Key? key, required this.type}) : super(key: key);
+  const WorkCard({final Key? key, required final this.type}) : super(key: key);
 
   @override
   WorkCardState createState() => WorkCardState();
@@ -30,7 +30,7 @@ class WorkCardState extends State<WorkCard> {
   late Future<List> futureWork = api.get("${key}_work");
 
   @override
-  build(context) {
+  build(final context) {
     final textTheme = Theme.of(context).textTheme;
 
     final title = textTheme.headline6;
@@ -39,29 +39,29 @@ class WorkCardState extends State<WorkCard> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(4.0),
+        padding: const EdgeInsets.all(4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.only(
-                top: 12.0,
-                left: 12.0,
-                bottom: 6.0,
-                right: 12.0,
+                top: 12,
+                left: 12,
+                bottom: 6,
+                right: 12,
               ),
               child: Text("${widget.type} Work", style: title),
             ),
             FutureBuilder<List>(
               future: futureWork,
-              builder: (context, snapshot) {
+              builder: (final context, final snapshot) {
                 if (snapshot.hasError) return Text("${snapshot.error}");
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return _WorkCardShimmer(count: _count);
                 }
 
                 final count = snapshot.data!.reversed
-                    .map((count) => WorkData.fromJson(count))
+                    .map((final count) => WorkData.fromJson(count))
                     .toList(growable: false);
 
                 _saveWork(count.length);
@@ -76,7 +76,7 @@ class WorkCardState extends State<WorkCard> {
                         shrinkWrap: true,
                         physics: const ClampingScrollPhysics(),
                         itemCount: count.length,
-                        itemBuilder: (context, index) {
+                        itemBuilder: (final context, final index) {
                           final work = count[index];
 
                           final hasDescription = work.description.isNotEmpty;
@@ -84,12 +84,12 @@ class WorkCardState extends State<WorkCard> {
                           final type = Text(work.type);
 
                           return Padding(
-                            padding: const EdgeInsets.all(4.0),
+                            padding: const EdgeInsets.all(4),
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(4.0),
+                              borderRadius: BorderRadius.circular(4),
                               onTap: () => _selectWork(work),
                               child: Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(8),
                                 child: Column(
                                   children: [
                                     Row(
@@ -152,19 +152,19 @@ class WorkCardState extends State<WorkCard> {
         futureWork = api.get("${key}_work");
       });
 
-  void _loadWork() async {
+  Future<void> _loadWork() async {
     final prefs = await SharedPreferences.getInstance();
 
-    setState(() => _count = (prefs.getInt(key) ?? _count));
+    setState(() => _count = prefs.getInt(key) ?? _count);
   }
 
-  void _saveWork(int count) async {
+  Future<void> _saveWork(final int count) async {
     final prefs = await _prefs;
 
     await prefs.setInt(key, _count = count);
   }
 
-  void _selectWork(WorkData work) {
+  void _selectWork(final WorkData work) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
@@ -176,22 +176,22 @@ class WorkCardState extends State<WorkCard> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (final context) => AlertDialog(
         title: Text(work.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Text(work.type),
             ),
             description.isNotEmpty
                 ? Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
+                    padding: const EdgeInsets.only(bottom: 16),
                     child: ExpandableNotifier(
                       child: ExpandablePanel(
-                        header: Text("Description:", style: bold),
+                        header: const Text("Description:", style: bold),
                         theme: ExpandableThemeData(
                           headerAlignment:
                               ExpandablePanelHeaderAlignment.center,
@@ -202,14 +202,14 @@ class WorkCardState extends State<WorkCard> {
                         ),
                         collapsed: Linkify(
                           text: work.description,
-                          onOpen: (link) => launchURL(link.url),
+                          onOpen: (final link) => launchURL(link.url),
                           linkStyle: link,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         expanded: Linkify(
                           text: work.description,
-                          onOpen: (link) => launchURL(link.url),
+                          onOpen: (final link) => launchURL(link.url),
                           linkStyle: link,
                         ),
                       ),
@@ -243,7 +243,7 @@ class WorkCardState extends State<WorkCard> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
+              padding: const EdgeInsets.only(top: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -255,7 +255,7 @@ class WorkCardState extends State<WorkCard> {
                   ),
                   Linkify(
                     text: work.teacherEmail,
-                    onOpen: (link) => launchURL(link.url),
+                    onOpen: (final link) => launchURL(link.url),
                     linkStyle: link,
                   ),
                 ],
@@ -280,18 +280,18 @@ class WorkData {
   final String teacherEmail;
 
   const WorkData({
-    required this.title,
-    required this.course,
-    required this.description,
-    required this.type,
-    required this.weight,
-    required this.code,
-    required this.end,
-    required this.teacherName,
-    required this.teacherEmail,
+    required final this.title,
+    required final this.course,
+    required final this.description,
+    required final this.type,
+    required final this.weight,
+    required final this.code,
+    required final this.end,
+    required final this.teacherName,
+    required final this.teacherEmail,
   });
 
-  factory WorkData.fromJson(Map<String, dynamic> data) => WorkData(
+  factory WorkData.fromJson(final Map<String, dynamic> data) => WorkData(
         title: data["title"],
         course: data["course_name"],
         description: data["description"],
@@ -309,20 +309,21 @@ class WorkData {
 class _WorkCardShimmer extends StatelessWidget {
   final int count;
 
-  const _WorkCardShimmer({Key? key, required this.count}) : super(key: key);
+  const _WorkCardShimmer({final Key? key, required final this.count})
+      : super(key: key);
 
   @override
-  build(context) => ListView.builder(
+  build(final context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(count, 1),
-        itemBuilder: (context, index) => count == 0
+        itemBuilder: (final context, final index) => count == 0
             ? const ListTile(title: CustomShimmer())
             : const ListTile(
                 // isThreeLine: true,
                 title: CustomShimmer(),
                 subtitle: CustomShimmer(),
-                trailing: CustomShimmer(width: 100.0),
+                trailing: CustomShimmer(width: 100),
               ),
       );
 }

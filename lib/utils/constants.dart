@@ -1,5 +1,5 @@
 library my_afse.cosntants;
 
-import "package:flutter/foundation.dart" as Foundation;
+import "package:flutter/foundation.dart" as foundation;
 
-const production = Foundation.kReleaseMode;
+const production = foundation.kReleaseMode;

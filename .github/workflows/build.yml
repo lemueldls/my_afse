@@ -30,6 +30,9 @@ jobs:
           echo "${{ secrets.KEYSTORE_PROPERTIES }}" | base64 --decode > android/key.properties
           echo "${{ secrets.FIREBASE_JSON }}" | base64 --decode > android/app/google-services.json
 
+      - name: Analyze Code
+        run: flutter analyze
+
       # - name: Run Test
       #   run: flutter test
 

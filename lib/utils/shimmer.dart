@@ -12,11 +12,11 @@ class CustomShimmer extends StatefulWidget {
   final EdgeInsetsGeometry padding;
 
   const CustomShimmer({
-    Key? key,
-    this.width,
-    this.height = 16.0,
-    this.radius = 5.0,
-    this.padding = EdgeInsets.zero,
+    final Key? key,
+    final this.width,
+    final this.height = 16,
+    final this.radius = 5,
+    final this.padding = EdgeInsets.zero,
   }) : super(key: key);
 
   @override
@@ -25,7 +25,7 @@ class CustomShimmer extends StatefulWidget {
 
 class _CustomShimmerState extends State<CustomShimmer> {
   @override
-  build(context) {
+  build(final context) {
     final dark = settings.dark;
 
     return Shimmer.fromColors(
