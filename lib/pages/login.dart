@@ -102,13 +102,12 @@ class _LoginPageState extends State<LoginPage> {
                         child: Row(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(
-                                right: 16,
-                              ),
+                              padding: const EdgeInsets.only(right: 16),
                               child: Image.asset(
                                 "assets/img/jumprope.webp",
                                 width: 25,
                                 height: 25,
+                                color: IconTheme.of(context).color!,
                               ),
                             ),
                             Text(
@@ -132,7 +131,6 @@ class _LoginPageState extends State<LoginPage> {
                           validator: _validateEmail,
                         ),
                       ),
-
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: TextFormField(
@@ -148,9 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                           validator: _validatePassword,
                         ),
                       ),
-
                       Text(_error, style: const TextStyle(color: Colors.red)),
-
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
