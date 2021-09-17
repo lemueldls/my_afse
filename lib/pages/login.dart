@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
 
     await analytics?.setUserId(id);
 
-    Navigator.of(context).pushReplacementNamed(settings.page);
+    Navigator.pushReplacementNamed(context, settings.page);
   }
 
   @override

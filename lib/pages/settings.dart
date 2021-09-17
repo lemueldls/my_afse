@@ -189,7 +189,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 theme.setColor(_color = pickerColor);
               });
 
-              Navigator.of(context).pop();
+              Navigator.pop(context);
             },
           ),
         ],

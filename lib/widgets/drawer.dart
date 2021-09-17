@@ -40,7 +40,8 @@ class DrawerListTile extends StatelessWidget {
         onTap: onTap ??
             () {
               if (currentRoute != route)
-                Navigator.of(context).pushNamedAndRemoveUntil(
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
                   route,
                   (final route) => false,
                 );
@@ -99,35 +100,56 @@ class PageDrawer extends StatelessWidget {
                 physics: clamping,
                 children: [
                   updater.prompt
-                      ? TextButtonTheme(
-                          data: TextButtonThemeData(
-                            style: TextButton.styleFrom(primary: contrast),
-                          ),
-                          child: MaterialBanner(
-                            contentTextStyle: TextStyle(color: contrast),
-                            content:
-                                const Text("A new version is now avaliable"),
-                            leading: Icon(Icons.update, color: contrast),
-                            actions: [
-                              TextButton(
-                                child: const Text("UPDATE"),
-                                onPressed: () => updater.update(),
-                              ),
-                            ],
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: TextButtonTheme(
+                            data: TextButtonThemeData(
+                              style: TextButton.styleFrom(primary: contrast),
+                            ),
+                            child: MaterialBanner(
+                              contentTextStyle: TextStyle(color: contrast),
+                              content:
+                                  const Text("A new version is now avaliable"),
+                              leading: Icon(Icons.download, color: contrast),
+                              actions: [
+                                TextButton(
+                                  child: const Text("UPDATE"),
+                                  onPressed: () => updater.update(),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       : const SizedBox.shrink(),
                   DrawerListTile(
                     route: "/login",
-                    onTap: () async {
-                      await api.logout();
-                      await auth.signOut();
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (final context) {
+                        final navigator = Navigator.of(context);
 
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        "/login",
-                        (final route) => false,
-                      );
-                    },
+                        return AlertDialog(
+                          title: const Text("Are you sure you want to logout?"),
+                          actions: [
+                            TextButton(
+                                onPressed: () => navigator.pop(),
+                                child: const Text("NO")),
+                            TextButton(
+                              onPressed: () async {
+                                await api.logout();
+                                await auth.signOut();
+
+                                navigator.pushNamedAndRemoveUntil(
+                                  "/login",
+                                  (final route) => false,
+                                );
+                              },
+                              child: const Text("YES"),
+                            )
+                          ],
+                        );
+                      },
+                    ),
                   ),
                   const Divider(height: 8, indent: 8, endIndent: 8),
                   const DrawerListTile(route: "/settings")
