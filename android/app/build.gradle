@@ -41,7 +41,7 @@ android {
 
     defaultConfig {
         applicationId "com.lemueldls.my_afse"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 30
         multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
