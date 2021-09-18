@@ -144,6 +144,8 @@ class _PeriodListViewState extends State<PeriodListView> {
 
           return false;
         });
+
+        if (_selectedIndex == -1) _selectedIndex = 0;
       }
 
       update();
@@ -346,8 +348,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-    final theme = Theme.of(context);
-    final title = theme.textTheme.headline6;
+    final title = Theme.of(context).textTheme.headline6;
 
     return SmartRefresher(
       physics: const BouncingScrollPhysics(),
@@ -405,22 +406,7 @@ class _SchedulePageState extends State<SchedulePage> {
                             ),
                             Expanded(
                               flex: 0,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 2,
-                                  horizontal: 6,
-                                ),
-                                decoration: today
-                                    ? BoxDecoration(
-                                        color: theme.primaryColor,
-                                        borderRadius: BorderRadius.circular(8),
-                                      )
-                                    : null,
-                                child: Text(
-                                  weekdays[weekday],
-                                  style: title,
-                                ),
-                              ),
+                              child: Text(weekdays[weekday], style: title),
                             ),
                             Expanded(
                               child: IconButton(
