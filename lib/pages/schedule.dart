@@ -185,7 +185,7 @@ class _PeriodListViewState extends State<PeriodListView> {
                     ? SizedBox(
                         width: 200,
                         child: Text(
-                          "${period.start} – ${period.end}",
+                          "${period.start} \u2013 ${period.end}",
                           style: selected
                               ? null
                               : TextStyle(color: Colors.grey.shade400),
@@ -340,12 +340,10 @@ class _SchedulePageState extends State<SchedulePage> {
   late Future<ScheduleData> _futureSchedule = _fetchSchedule();
 
   Timer? _timer;
-  int _currentDay = min(DateTime.now().weekday, DateTime.friday) - 1;
+  int _currentDay = (min(DateTime.now().weekday, DateTime.friday) - 1) % 6;
 
   @override
   build(final context) {
-    final height = MediaQuery.of(context).size.height - kToolbarHeight - 31;
-
     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
     final title = Theme.of(context).textTheme.headline6;
@@ -354,80 +352,91 @@ class _SchedulePageState extends State<SchedulePage> {
       physics: const BouncingScrollPhysics(),
       controller: _refreshController,
       onRefresh: _refresh,
-      child: Align(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 750),
-          child: FutureBuilder<ScheduleData>(
-            future: _futureSchedule,
-            builder: (final context, final snapshot) {
-              if (snapshot.hasError) return Text("${snapshot.error}");
-              if (snapshot.connectionState == ConnectionState.waiting)
-                return _SchedulePageShimmer(periods: _periods);
+      child: SingleChildScrollView(
+        child: Align(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 750),
+            child: FutureBuilder<ScheduleData>(
+              future: _futureSchedule,
+              builder: (final context, final snapshot) {
+                if (snapshot.hasError) return Text("${snapshot.error}");
+                if (snapshot.connectionState == ConnectionState.waiting)
+                  return _SchedulePageShimmer(periods: _periods);
 
-              final schedule = snapshot.data!.schedule;
+                final schedule = snapshot.data!.schedule;
 
-              _savePeriods(schedule);
+                _savePeriods(schedule);
 
-              final now = DateTime.now();
-              final tommorrow =
-                  DateTime(now.year, now.month, now.day + 1).difference(now);
+                final now = DateTime.now();
+                final tommorrow =
+                    DateTime(now.year, now.month, now.day + 1).difference(now);
 
-              _timer = Timer(
-                tommorrow,
-                () => setState(() => ++_currentDay),
-              );
+                _timer = Timer(
+                  tommorrow,
+                  () => setState(() => ++_currentDay),
+                );
 
-              return CarouselSlider.builder(
-                carouselController: _controller,
-                options: CarouselOptions(
-                  height: height,
-                  viewportFraction: 1,
-                  initialPage: _currentDay,
-                ),
-                itemCount: schedule.length,
-                itemBuilder: (final context, final weekday, final _realIndex) {
-                  final today = weekday == _currentDay;
+                final maxPeriods = schedule.fold(
+                  0,
+                  (final int value, final day) => max(value, day.length),
+                );
 
-                  const curve = Curves.ease;
+                return CarouselSlider.builder(
+                  carouselController: _controller,
+                  options: CarouselOptions(
+                    height: 72.0 + 57 * maxPeriods,
+                    viewportFraction: 1,
+                    initialPage: _currentDay,
+                  ),
+                  itemCount: schedule.length,
+                  itemBuilder:
+                      (final context, final weekday, final _realIndex) {
+                    final today = weekday == DateTime.now().weekday - 1;
 
-                  return Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                              child: IconButton(
-                                onPressed: () =>
-                                    _controller.previousPage(curve: curve),
-                                icon: const Icon(Icons.chevron_left),
+                    const curve = Curves.ease;
+
+                    return Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                child: IconButton(
+                                  onPressed: () =>
+                                      _controller.previousPage(curve: curve),
+                                  icon: const Icon(Icons.chevron_left),
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 0,
-                              child: Text(weekdays[weekday], style: title),
-                            ),
-                            Expanded(
-                              child: IconButton(
-                                onPressed: () =>
-                                    _controller.nextPage(curve: curve),
-                                icon: const Icon(Icons.chevron_right),
+                              Expanded(
+                                flex: 0,
+                                child: Text(weekdays[weekday], style: title),
                               ),
-                            ),
-                          ],
+                              Expanded(
+                                child: IconButton(
+                                  onPressed: () =>
+                                      _controller.nextPage(curve: curve),
+                                  icon: const Icon(Icons.chevron_right),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Divider(height: 1),
-                      PeriodListView(
-                        day: schedule[weekday],
-                        today: today,
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
+                        const Divider(height: 1),
+                        OrientationBuilder(
+                          builder: (final context, final _orientation) =>
+                              PeriodListView(
+                            day: schedule[weekday],
+                            today: today,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
       ),
