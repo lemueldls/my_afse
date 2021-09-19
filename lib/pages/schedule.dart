@@ -132,7 +132,7 @@ class _PeriodListViewState extends State<PeriodListView> {
       void update() {
         final now = DateTime.now();
 
-        _selectedIndex = day.indexWhere((final period) {
+        _selectedIndex = max(0, day.indexWhere((final period) {
           final start = _timeToDate(period.start);
           final end = _timeToDate(period.end);
 
@@ -143,9 +143,7 @@ class _PeriodListViewState extends State<PeriodListView> {
           }
 
           return false;
-        });
-
-        if (_selectedIndex == -1) _selectedIndex = 0;
+        }));
       }
 
       update();
@@ -340,7 +338,7 @@ class _SchedulePageState extends State<SchedulePage> {
   late Future<ScheduleData> _futureSchedule = _fetchSchedule();
 
   Timer? _timer;
-  int _currentDay = (min(DateTime.now().weekday, DateTime.friday) - 1) % 6;
+  int _currentDay = min((DateTime.now().weekday - 1) % 6, DateTime.friday - 1);
 
   @override
   build(final context) {
