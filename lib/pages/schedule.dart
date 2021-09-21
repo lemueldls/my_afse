@@ -132,18 +132,21 @@ class _PeriodListViewState extends State<PeriodListView> {
       void update() {
         final now = DateTime.now();
 
-        _selectedIndex = max(0, day.indexWhere((final period) {
-          final start = _timeToDate(period.start);
-          final end = _timeToDate(period.end);
+        _selectedIndex = now.isBefore(_timeToDate(day.first.start))
+            ? 0
+            : day.indexWhere((final period) {
+                final start = _timeToDate(period.start);
+                final end = _timeToDate(period.end);
 
-          if (now.isAfter(start) && now.isBefore(end)) {
-            _timer = Timer(end.difference(now), () => setState(() => update()));
+                if (now.isAfter(start) && now.isBefore(end)) {
+                  _timer = Timer(
+                      end.difference(now), () => setState(() => update()));
 
-            return true;
-          }
+                  return true;
+                }
 
-          return false;
-        }));
+                return false;
+              });
       }
 
       update();
