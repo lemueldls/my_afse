@@ -139,8 +139,7 @@ class _PeriodListViewState extends State<PeriodListView> {
                 final end = _timeToDate(period.end);
 
                 if (now.isAfter(start) && now.isBefore(end)) {
-                  _timer = Timer(
-                      end.difference(now), () => setState(() => update()));
+                  _timer = Timer(end.difference(now), () => setState(update));
 
                   return true;
                 }
@@ -392,7 +391,7 @@ class _SchedulePageState extends State<SchedulePage> {
                   itemCount: schedule.length,
                   itemBuilder:
                       (final context, final weekday, final _realIndex) {
-                    final today = weekday == DateTime.now().weekday - 1;
+                    final today = weekday == now.weekday - 1;
 
                     const curve = Curves.ease;
 
