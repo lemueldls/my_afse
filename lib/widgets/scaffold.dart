@@ -23,6 +23,7 @@ class PageScaffold extends StatelessWidget {
       key: _scaffoldKey,
       appBar: AppBar(title: Text(title)),
       drawer: const PageDrawer(),
+      drawerEdgeDragWidth: 40,
       body: WillPopScope(
         onWillPop: () async {
           final scaffoldState = _scaffoldKey.currentState!;
