@@ -127,6 +127,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: FutureBuilder<List>(
                                 future: _futureSchool,
                                 builder: (final context, final snapshot) {
+                                  if (snapshot.hasError)
+                                    return const Text(
+                                      "Failed to load school",
+                                      style: TextStyle(color: Colors.red),
+                                    );
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting)
                                     return const CustomShimmer();
@@ -155,6 +160,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         FutureBuilder<List>(
                           future: _futureEnrollment,
                           builder: (final context, final snapshot) {
+                            if (snapshot.hasError)
+                              return const Text(
+                                "Failed to load enrollment",
+                                style: TextStyle(color: Colors.red),
+                              );
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting)
                               return const Expanded(child: CustomShimmer());
@@ -175,6 +185,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: FutureBuilder<List>(
                         future: _futureRole,
                         builder: (final context, final snapshot) {
+                          if (snapshot.hasError)
+                            return const Text(
+                              "Failed to load roles",
+                              style: TextStyle(color: Colors.red),
+                            );
+
                           final subtitle = textTheme.bodyText2!.copyWith(
                             color: textTheme.caption!.color,
                           );

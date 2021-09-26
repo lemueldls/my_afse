@@ -419,7 +419,13 @@ class _GradesPageState extends State<GradesPage> {
                     child: FutureBuilder<List>(
                       future: _futureMastery,
                       builder: (final context, final snapshot) {
-                        if (snapshot.hasError) return Text("${snapshot.error}");
+                        if (snapshot.hasError)
+                          return const ListTile(
+                            title: Text(
+                              "Failed to load grades",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          );
                         if (snapshot.connectionState == ConnectionState.waiting)
                           return _GradesPageShimmer(scores: _scores);
 

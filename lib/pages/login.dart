@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           _error = error.message!;
           break;
       }
-    } on Error catch (error) {
+    } on Exception catch (error) {
       _error = error.toString();
     }
 

@@ -8,6 +8,7 @@ import "package:shared_preferences/shared_preferences.dart";
 
 import "../utils/shimmer.dart";
 import "../utils/url.dart";
+import "../widgets/error.dart";
 
 class Event {
   final String summary;
@@ -41,7 +42,7 @@ class EventCardsState extends State<EventCards> {
   build(final context) => FutureBuilder<EventData>(
         future: futureEvents,
         builder: (final context, final snapshot) {
-          if (snapshot.hasError) return Text("${snapshot.error}");
+          if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
           if (snapshot.connectionState == ConnectionState.waiting)
             return _EventsCardShimmer(events: _events);
 
@@ -112,18 +113,15 @@ class EventCardsState extends State<EventCards> {
       });
 
   Future<EventData> _fetchEvents() async {
-    final response = await http.get(
-      Uri.parse("https://www.afsenyc.org/apps/events/ical"),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse("https://www.afsenyc.org/apps/events/ical"),
+      );
 
-    if (response.statusCode == 200)
-      // If the server did return a 200 OK response,
-      // then parse the data.
       return EventData.parseData(response.body);
-    else
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
+    } on Exception {
       throw Exception("Failed to load events");
+    }
   }
 
   Future<void> _loadEvents() async {

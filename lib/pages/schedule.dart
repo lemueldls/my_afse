@@ -14,6 +14,7 @@ import "../extensions/int.dart";
 import "../extensions/list.dart";
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
+import "../widgets/error.dart";
 
 class Period {
   final int index;
@@ -359,7 +360,8 @@ class _SchedulePageState extends State<SchedulePage> {
             child: FutureBuilder<ScheduleData>(
               future: _futureSchedule,
               builder: (final context, final snapshot) {
-                if (snapshot.hasError) return Text("${snapshot.error}");
+                if (snapshot.hasError)
+                  return ErrorCard(error: "${snapshot.error}");
                 if (snapshot.connectionState == ConnectionState.waiting)
                   return _SchedulePageShimmer(periods: _periods);
 
@@ -458,20 +460,17 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<ScheduleData> _fetchSchedule() async {
-    final response = await http.get(
-      Uri.parse(
-        "https://api.jumpro.pe/schedule/student_schedule/?as=html&student_id=${student.id}",
-      ),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse(
+          "https://api.jumpro.pe/schedule/student_schedule/?as=html&student_id=${student.id}",
+        ),
+      );
 
-    if (response.statusCode == 200)
-      // If the server did return a 200 OK response,
-      // then parse the HTML.
       return ScheduleData.parseData(response.body);
-    else
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
+    } on Exception {
       throw Exception("Failed to load schedule");
+    }
   }
 
   Future<void> _loadPeriods() async {

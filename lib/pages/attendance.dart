@@ -11,6 +11,7 @@ import "package:universal_html/parsing.dart";
 
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
+import "../widgets/error.dart";
 
 const cellSize = 48.0;
 const dateWidth = cellSize * 2.25;
@@ -333,7 +334,7 @@ class _AttendancePageState extends State<AttendancePage> {
         child: FutureBuilder<AttendanceData>(
           future: _futureAttendance,
           builder: (final context, final snapshot) {
-            if (snapshot.hasError) return Text("${snapshot.error}");
+            if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
             if (snapshot.connectionState == ConnectionState.waiting)
               return _AttendancePageShimmer(rows: _rows, columns: _columns);
 
@@ -383,20 +384,17 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   Future<AttendanceData> _fetchAttendance() async {
-    final response = await http.get(
-      Uri.parse(
-        "https://api.jumpro.pe/attendance/student_attendance_summary/?as=html&student_id=${student.id}",
-      ),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse(
+          "https://api.jumpro.pe/attendance/student_attendance_summary/?as=html&student_id=${student.id}",
+        ),
+      );
 
-    if (response.statusCode == 200)
-      // If the server did return a 200 OK response,
-      // then parse the HTML.
       return AttendanceData.parseData(response.body);
-    else
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
+    } on Exception {
       throw Exception("Failed to load attendance");
+    }
   }
 
   Future<void> _loadTable() async {

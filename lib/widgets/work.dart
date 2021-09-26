@@ -55,7 +55,13 @@ class WorkCardState extends State<WorkCard> {
             FutureBuilder<List>(
               future: futureWork,
               builder: (final context, final snapshot) {
-                if (snapshot.hasError) return Text("${snapshot.error}");
+                if (snapshot.hasError)
+                  return ListTile(
+                    title: Text(
+                      "Failed to load $key work",
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return _WorkCardShimmer(count: _count);
                 }

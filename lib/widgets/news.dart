@@ -11,6 +11,7 @@ import "package:webfeed/webfeed.dart";
 import "../extensions/list.dart";
 import "../utils/shimmer.dart";
 import "../utils/url.dart";
+import "../widgets/error.dart";
 
 class News {
   final String title;
@@ -54,7 +55,7 @@ class NewsCardsState extends State<NewsCards> {
     return FutureBuilder<NewsData>(
       future: futureNews,
       builder: (final context, final snapshot) {
-        if (snapshot.hasError) return Text("${snapshot.error}");
+        if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
         if (snapshot.connectionState == ConnectionState.waiting)
           return _NewsCardShimmer(news: _news);
 
@@ -167,18 +168,15 @@ class NewsCardsState extends State<NewsCards> {
       });
 
   Future<NewsData> _fetchNews() async {
-    final response = await http.get(
-      Uri.parse("https://www.afsenyc.org/apps/news/rss"),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse("https://www.afsenyc.org/apps/news/rss"),
+      );
 
-    if (response.statusCode == 200)
-      // If the server did return a 200 OK response,
-      // then parse the data.
       return NewsData.parseData(response.body);
-    else
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
+    } on Exception {
       throw Exception("Failed to load news");
+    }
   }
 
   Future<void> _loadNews() async {

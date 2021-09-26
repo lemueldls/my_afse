@@ -41,15 +41,25 @@ Future<LoginResponse> login(
     final String username, final String password) async {
   final prefs = await _prefs;
 
-  final loginRes = await http.post(
-    Uri.parse("https://nyc3.jumpro.pe/account/login/"),
-    body: {"username": username, "password": password, "module": "Portal"},
-  );
-  final response = LoginResponse.fromJson(jsonDecode(loginRes.body));
+  try {
+    final loginRes = await http.post(
+      Uri.parse("https://nyc3.jumpro.pe/account/login/"),
+      body: {"username": username, "password": password, "module": "Portal"},
+    );
 
-  if (response.success) await prefs.setString("token", response.token!);
+    final response = LoginResponse.fromJson(jsonDecode(loginRes.body));
 
-  return response;
+    if (response.success) await prefs.setString("token", response.token!);
+
+    return response;
+  } on Exception {
+    return const LoginResponse(
+      success: false,
+      type: "",
+      message: "Failed to login",
+      token: "",
+    );
+  }
 }
 
 Future<void> logout() async {
