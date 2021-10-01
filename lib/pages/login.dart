@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String _email = "";
   String _password = "";
+  bool _passwordVisible = false;
   String _error = "";
   bool _loading = false;
 
@@ -70,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
 
     await analytics?.setUserId(id);
 
-    Navigator.pushReplacementNamed(context, settings.page);
+    Navigator.of(context).pushReplacementNamed(settings.page);
   }
 
   @override
@@ -135,9 +136,19 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.only(bottom: 16),
                         child: TextFormField(
                           controller: _passwordFilter,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.lock),
+                          obscureText: !_passwordVisible,
+                          decoration: InputDecoration(
+                            icon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              onPressed: () => setState(
+                                () => _passwordVisible = !_passwordVisible,
+                              ),
+                              icon: Icon(
+                                _passwordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                            ),
                             labelText: "Password",
                           ),
                           keyboardType: TextInputType.visiblePassword,
