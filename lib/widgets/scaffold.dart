@@ -28,11 +28,10 @@ class PageScaffold extends StatelessWidget {
         onWillPop: () async {
           final scaffoldState = _scaffoldKey.currentState!;
 
-          if (scaffoldState.isDrawerOpen) {
-            Navigator.pop(context);
-          } else {
+          if (scaffoldState.isDrawerOpen)
+            Navigator.of(context).pop();
+          else
             scaffoldState.openDrawer();
-          }
 
           return false;
         },

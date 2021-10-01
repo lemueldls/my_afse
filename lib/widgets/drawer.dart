@@ -40,8 +40,7 @@ class DrawerListTile extends StatelessWidget {
         onTap: onTap ??
             () {
               if (currentRoute != route)
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
+                Navigator.of(context).pushNamedAndRemoveUntil(
                   route,
                   (final route) => false,
                 );
@@ -62,8 +61,6 @@ class PageDrawer extends StatelessWidget {
     final contrast = theme.primaryColorBrightness.text;
 
     const clamping = ClampingScrollPhysics();
-
-    final auth = FirebaseAuth.instance;
 
     return Drawer(
       child: ListTileTheme(
@@ -123,33 +120,7 @@ class PageDrawer extends StatelessWidget {
                       : const SizedBox.shrink(),
                   DrawerListTile(
                     route: "/login",
-                    onTap: () => showDialog(
-                      context: context,
-                      builder: (final context) {
-                        final navigator = Navigator.of(context);
-
-                        return AlertDialog(
-                          title: const Text("Are you sure you want to logout?"),
-                          actions: [
-                            TextButton(
-                                onPressed: () => navigator.pop(),
-                                child: const Text("NO")),
-                            TextButton(
-                              onPressed: () async {
-                                await api.logout();
-                                await auth.signOut();
-
-                                navigator.pushNamedAndRemoveUntil(
-                                  "/login",
-                                  (final route) => false,
-                                );
-                              },
-                              child: const Text("YES"),
-                            )
-                          ],
-                        );
-                      },
-                    ),
+                    onTap: () => _logout(context),
                   ),
                   const Divider(height: 8, indent: 8, endIndent: 8),
                   const DrawerListTile(route: "/settings")
@@ -161,4 +132,30 @@ class PageDrawer extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _logout(final BuildContext context) async => showDialog(
+        context: context,
+        builder: (final context) {
+          final navigator = Navigator.of(context);
+
+          return AlertDialog(
+            title: const Text("Are you sure you want to logout?"),
+            actions: [
+              TextButton(onPressed: navigator.pop, child: const Text("NO")),
+              TextButton(
+                onPressed: () async {
+                  await api.logout();
+                  await FirebaseAuth.instance.signOut();
+
+                  navigator.pushNamedAndRemoveUntil(
+                    "/login",
+                    (final route) => false,
+                  );
+                },
+                child: const Text("YES"),
+              )
+            ],
+          );
+        },
+      );
 }
