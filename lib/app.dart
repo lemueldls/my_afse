@@ -32,7 +32,7 @@ class App extends StatelessWidget {
       ),
     );
 
-    const debugPage = production ? null : "/home";
+    const debugPage = production ? null : "/grades";
 
     final theme = Provider.of<ThemeChanger>(context);
 
