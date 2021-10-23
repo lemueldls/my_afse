@@ -12,6 +12,7 @@ import "package:universal_html/parsing.dart";
 import "../extensions/brightness.dart";
 import "../extensions/int.dart";
 import "../extensions/list.dart";
+import "../utils/constants.dart";
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
 import "../widgets/error.dart";
@@ -465,6 +466,7 @@ class _SchedulePageState extends State<SchedulePage> {
         Uri.parse(
           "https://api.jumpro.pe/schedule/student_schedule/?as=html&student_id=${student.id}",
         ),
+        headers: userAgentHeader,
       );
 
       return ScheduleData.parseData(response.body);

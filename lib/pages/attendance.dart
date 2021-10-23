@@ -9,6 +9,7 @@ import "package:pull_to_refresh/pull_to_refresh.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:universal_html/parsing.dart";
 
+import "../utils/constants.dart";
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
 import "../widgets/error.dart";
@@ -389,6 +390,7 @@ class _AttendancePageState extends State<AttendancePage> {
         Uri.parse(
           "https://api.jumpro.pe/attendance/student_attendance_summary/?as=html&student_id=${student.id}",
         ),
+        headers: userAgentHeader,
       );
 
       return AttendanceData.parseData(response.body);

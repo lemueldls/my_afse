@@ -6,6 +6,9 @@ import "dart:io";
 
 import "package:http/http.dart" as http;
 import "package:shared_preferences/shared_preferences.dart";
+import "package:universal_html/parsing.dart";
+
+import "./constants.dart";
 
 final _prefs = SharedPreferences.getInstance();
 
@@ -22,6 +25,7 @@ Future<List<API>> get<API>(final String api) async {
   final response = await http.get(
     Uri.parse("https://api.jumpro.pe/api/v3/$api/"),
     headers: {
+      ...userAgentHeader,
       HttpHeaders.contentTypeHeader: "application/json",
       HttpHeaders.authorizationHeader: "ApiKey $username:$token",
     },
@@ -42,22 +46,37 @@ Future<LoginResponse> login(
   final prefs = await _prefs;
 
   try {
-    final loginRes = await http.post(
-      Uri.parse("https://nyc3.jumpro.pe/account/login/"),
-      body: {"username": username, "password": password, "module": "Portal"},
-    );
+    const headers = {
+      ...userAgentHeader,
+      HttpHeaders.contentTypeHeader: "application/x-www-form-urlencoded",
+    };
+    final request =
+        http.Request("POST", Uri.parse("https://services.jumpro.pe/login/"))
+          ..bodyFields = {"username": username, "password": password}
+          ..followRedirects = false
+          ..headers.addAll(headers);
 
-    final response = LoginResponse.fromJson(jsonDecode(loginRes.body));
+    final http.StreamedResponse response = await request.send();
 
-    if (response.success) await prefs.setString("token", response.token!);
+    if (response.statusCode == 200) {
+      final error = parseHtmlDocument(await response.stream.bytesToString())
+          .querySelector(".text-danger")!
+          .innerText;
 
-    return response;
+      return LoginResponse(success: false, message: error, token: null);
+    } else {
+      final token =
+          Uri.parse(response.headers["location"]!).queryParameters["st"]!;
+
+      await prefs.setString("token", token);
+
+      return LoginResponse(success: true, message: null, token: token);
+    }
   } on Exception {
     return const LoginResponse(
       success: false,
-      type: "",
       message: "Failed to login",
-      token: "",
+      token: null,
     );
   }
 }
@@ -84,8 +103,10 @@ Future<ValidateResponse> validate(final String token) async {
   final completer = Completer();
   _validated = completer.future;
 
-  final validateRes = await http
-      .get(Uri.parse("https://api.jumpro.pe/account/validate_token?st=$token"));
+  final validateRes = await http.get(
+    Uri.parse("https://api.jumpro.pe/account/validate_token?st=$token"),
+    headers: userAgentHeader,
+  );
   final response = ValidateResponse.fromJson(jsonDecode(validateRes.body));
 
   if (response.success) {
@@ -101,13 +122,11 @@ Future<ValidateResponse> validate(final String token) async {
 
 class LoginResponse {
   final bool success;
-  final String? type;
   final String? message;
   final String? token;
 
   const LoginResponse({
     required final this.success,
-    required final this.type,
     required final this.message,
     required final this.token,
   });
@@ -115,13 +134,12 @@ class LoginResponse {
   factory LoginResponse.fromJson(final Map<String, dynamic> json) =>
       LoginResponse(
         success: json["success"],
-        type: json["type"],
         message: json["message"],
         token: json["services_token"],
       );
 
   @override
-  toString() => "{ $success, $type, $message, $token }";
+  toString() => "{ $success, $message, $token }";
 }
 
 class ValidateResponse {
