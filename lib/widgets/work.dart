@@ -178,7 +178,10 @@ class WorkCardState extends State<WorkCard> {
 
     final link = textTheme.bodyText2!.copyWith(color: theme.primaryColor);
 
+    const empty = SizedBox.shrink();
+
     final description = work.description;
+    final code = work.code;
 
     showDialog(
       context: context,
@@ -221,17 +224,19 @@ class WorkCardState extends State<WorkCard> {
                       ),
                     ),
                   )
-                : const SizedBox.shrink(),
+                : empty,
             Row(
               children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Text("Score Code: ", style: bold),
-                      Text(work.code),
-                    ],
-                  ),
-                ),
+                code != null
+                    ? Expanded(
+                        child: Row(
+                          children: [
+                            const Text("Score Code: ", style: bold),
+                            Text(code),
+                          ],
+                        ),
+                      )
+                    : empty,
                 Expanded(
                   child: Row(
                     children: [
@@ -280,7 +285,7 @@ class WorkData {
   final String description;
   final String type;
   final String weight;
-  final String code;
+  final String? code;
   final String end;
   final String teacherName;
   final String teacherEmail;
