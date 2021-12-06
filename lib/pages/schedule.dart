@@ -74,7 +74,8 @@ class ScheduleData {
           .forEach((final row, final cell) {
         if (cell.className != "cell-with-data") return;
 
-        final time = times[row].split("-").map((final time) {
+        final timeRow = times.tryGet(row) ?? times.last;
+        final time = timeRow.split("-").map((final time) {
           final start = int.parse(time.split(":")[0]);
 
           return "${time.trim()} ${start > 5 && start != 12 ? "A" : "P"}M";
