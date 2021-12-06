@@ -35,8 +35,6 @@ class WorkCardState extends State<WorkCard> {
 
     final title = textTheme.headline6;
 
-    const empty = SizedBox.shrink();
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(4),
