@@ -85,10 +85,6 @@ class WorkCardState extends State<WorkCard> {
                         itemBuilder: (final context, final index) {
                           final work = count[index];
 
-                          final hasDescription = work.description.isNotEmpty;
-
-                          final type = Text(work.type);
-
                           return Padding(
                             padding: const EdgeInsets.all(4),
                             child: InkWell(
@@ -108,26 +104,22 @@ class WorkCardState extends State<WorkCard> {
                                             maxLines: 1,
                                           ),
                                         ),
-                                        hasDescription ? type : empty,
+                                        Text(work.type),
                                       ],
                                     ),
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: hasDescription
-                                              ? Text(
-                                                  work.description
-                                                      .replaceAll("\n", " "),
-                                                  style: textTheme.bodyText2
-                                                      ?.copyWith(
-                                                    color: textTheme
-                                                        .caption!.color,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 2,
-                                                )
-                                              : type,
+                                          child: Text(
+                                            work.description
+                                                .replaceAll("\n", " "),
+                                            style:
+                                                textTheme.bodyText2?.copyWith(
+                                              color: textTheme.caption!.color,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                          ),
                                         ),
                                         Text(work.course),
                                       ],
