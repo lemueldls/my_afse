@@ -25,7 +25,9 @@ async function respond(request: Request): Promise<Response> {
   headers.set("accept", "application/octet-stream");
 
   for (const { name, url } of assets) {
-    if (file === name) return fetch(url, { headers });
+    const location = await fetch(url, { headers, redirect: "manual" });
+
+    if (file === name) return fetch(location.headers.get("location")!);
   }
 
   return new Response("File not found");
