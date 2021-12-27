@@ -5,6 +5,7 @@ import "package:shimmer/shimmer.dart";
 
 import "settings.dart";
 
+/// Loading blocks o' shiny.
 class CustomShimmer extends StatefulWidget {
   final double? width;
   final double height;
@@ -12,11 +13,11 @@ class CustomShimmer extends StatefulWidget {
   final EdgeInsetsGeometry padding;
 
   const CustomShimmer({
-    final Key? key,
     final this.width,
     final this.height = 16,
     final this.radius = 5,
     final this.padding = EdgeInsets.zero,
+    final Key? key,
   }) : super(key: key);
 
   @override
@@ -25,7 +26,7 @@ class CustomShimmer extends StatefulWidget {
 
 class _CustomShimmerState extends State<CustomShimmer> {
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final dark = settings.dark;
 
     return Shimmer.fromColors(

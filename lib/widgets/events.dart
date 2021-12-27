@@ -10,6 +10,9 @@ import "../utils/shimmer.dart";
 import "../utils/url.dart";
 import "../widgets/error.dart";
 
+/// Convert to `HOUR_MINUTE` format.
+String jm(final IcsDateTime time) => DateFormat.jm().format(time.toDateTime()!);
+
 class Event {
   final String summary;
   final String time;
@@ -39,7 +42,7 @@ class EventCardsState extends State<EventCards> {
   late Future<EventData> futureEvents = _fetchEvents();
 
   @override
-  build(final context) => FutureBuilder<EventData>(
+  Widget build(final BuildContext context) => FutureBuilder<EventData>(
         future: futureEvents,
         builder: (final context, final snapshot) {
           if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
@@ -47,7 +50,7 @@ class EventCardsState extends State<EventCards> {
             return _EventsCardShimmer(events: _events);
 
           final events = snapshot.data!.events;
-          final length = min(events.length, 5);
+          final length = events.length;
 
           _saveEvents(length);
 
@@ -76,18 +79,18 @@ class EventCardsState extends State<EventCards> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(event.time),
-                            hasLocation
-                                ? Row(
-                                    children: [
-                                      const Text(
-                                        "Location: ",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(location!)
-                                    ],
-                                  )
-                                : const SizedBox.shrink()
+                            if (hasLocation)
+                              Row(
+                                children: [
+                                  const Text(
+                                    "Location: ",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(location!)
+                                ],
+                              )
                           ],
                         ),
                         trailing: IconButton(
@@ -146,26 +149,44 @@ class EventData {
     final ical = ICalendar.fromString(data);
     final now = DateTime.now();
 
+    final events = ical.data.where(
+      (final event) {
+        final String type = event["type"];
+
+        // Filter in only events from the calendar.
+        if (type != "VEVENT") return false;
+
+        final IcsDateTime start = event["dtstart"];
+
+        // Keep events within 31 days in the future.
+        return now.difference(start.toDateTime()!).inDays <= 31;
+      },
+    ).toList(growable: false)
+      ..sort(
+        // Sort by upcoming events.
+        (final a, final b) {
+          final IcsDateTime startA = a["dtstart"];
+          final IcsDateTime startB = b["dtstart"];
+
+          return startA.toDateTime()!.compareTo(startB.toDateTime()!);
+        },
+      );
+
     return EventData(
-      events: ical.data
-          .where(
-        (final event) =>
-            event["type"] == "VEVENT" &&
-            now.difference(event["dtstart"].toDateTime()).inDays <= 31,
-      )
-          .map(
+      events: events.take(5).map(
+        // Use and format only the first 5 events.
         (final event) {
-          jm(final IcsDateTime time) =>
-              DateFormat.jm().format(time.toDateTime()!);
+          final String summary = event["summary"];
 
           final IcsDateTime start = event["dtstart"];
           final IcsDateTime? end = event["dtend"];
 
+          final formattedStart = DateFormat.MMMMd().format(start.toDateTime()!);
+          final formattedEnd = end != null ? " to ${jm(end)}" : "";
+
           return Event(
-            summary: event["summary"].split(" (Events)")[0],
-            time:
-                "${DateFormat.MMMMd().format(start.toDateTime()!)}, ${jm(start)}" +
-                    (end != null ? " to ${jm(end)}" : ""),
+            summary: summary.split(" (Events)")[0],
+            time: "$formattedStart, ${jm(start)}$formattedEnd",
             location: event["location"],
             url: event["url"],
           );
@@ -178,11 +199,13 @@ class EventData {
 class _EventsCardShimmer extends StatelessWidget {
   final int events;
 
-  const _EventsCardShimmer({final Key? key, required final this.events})
-      : super(key: key);
+  const _EventsCardShimmer({
+    required final this.events,
+    final Key? key,
+  }) : super(key: key);
 
   @override
-  build(final context) => ListView.builder(
+  Widget build(final BuildContext context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(events, 1),

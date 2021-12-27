@@ -17,10 +17,10 @@ class Enrollment {
     required final this.end,
   });
 
-  factory Enrollment.fromJson(final List data) {
-    final enrollment = data[0];
+  factory Enrollment.fromJson(final List<dynamic> data) {
+    final Map<String, dynamic> enrollment = data[0];
 
-    format(final String date) =>
+    String format(final String date) =>
         DateFormat.yMMMEd().format(DateFormat("y-M-d").parse(date));
 
     final end = enrollment["end_date"];
@@ -68,8 +68,8 @@ class School {
 
   const School({required final this.name});
 
-  factory School.fromJson(final List data) {
-    final school = data[0];
+  factory School.fromJson(final List<dynamic> data) {
+    final Map<String, dynamic> school = data[0];
 
     return School(name: school["name"]);
   }
@@ -78,19 +78,17 @@ class School {
 class _ProfilePageState extends State<ProfilePage> {
   final _refreshController = RefreshController();
 
-  late Future<List> _futureSchool = api.get("school");
-  late Future<List> _futureEnrollment = api.get("school_enrollment");
-  late Future<List> _futureRole = api.get("role");
+  late Future<List<dynamic>> _futureSchool = api.get("school");
+  late Future<List<dynamic>> _futureEnrollment = api.get("school_enrollment");
+  late Future<List<dynamic>> _futureRole = api.get("role");
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
     final title = textTheme.subtitle1;
     const bold = TextStyle(fontWeight: FontWeight.bold);
-
-    const empty = SizedBox.shrink();
 
     final _followers = student.followers.length;
 
@@ -124,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(right: 16),
-                              child: FutureBuilder<List>(
+                              child: FutureBuilder<List<dynamic>>(
                                 future: _futureSchool,
                                 builder: (final context, final snapshot) {
                                   if (snapshot.hasError)
@@ -157,7 +155,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Row(
                       children: [
                         const Text("Enrollment: ", style: bold),
-                        FutureBuilder<List>(
+                        FutureBuilder<List<dynamic>>(
                           future: _futureEnrollment,
                           builder: (final context, final snapshot) {
                             if (snapshot.hasError)
@@ -182,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: FutureBuilder<List>(
+                      child: FutureBuilder<List<dynamic>>(
                         future: _futureRole,
                         builder: (final context, final snapshot) {
                           if (snapshot.hasError)
@@ -221,7 +219,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           );
 
-                          final List<Widget> children = [
+                          final children = <Widget>[
                             Padding(
                               padding: const EdgeInsets.only(top: 8, bottom: 1),
                               child: teacher,
@@ -233,11 +231,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           if (hasFollowers) {
                             children.add(followersText);
 
-                            for (int i = 0; i < _followers; i++)
-                              children.add(Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Column(children: [teacher, sub]),
-                              ));
+                            for (var i = 0; i < _followers; i++)
+                              children.add(
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Column(children: [teacher, sub]),
+                                ),
+                              );
 
                             children.add(
                               const Padding(
@@ -262,7 +262,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           final followers = student.followers
                               .map(
                                 (final follower) => roles.firstWhere(
-                                    (final role) => role.id == follower),
+                                  (final role) => role.id == follower,
+                                ),
                               )
                               .toList(growable: false);
 
@@ -294,7 +295,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     Text(adviser.schedule),
                                   ],
                                 ),
-                                hasFollowers ? followersText : empty,
+                                if (hasFollowers) followersText,
                                 ListView.builder(
                                   shrinkWrap: true,
                                   physics: const ClampingScrollPhysics(),
@@ -351,6 +352,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _futureEnrollment = api.get("school_enrollment");
         _futureRole = api.get("role");
 
+        // Still waiting 🥲
         Future.wait([
           fetchStudent(),
           _futureSchool,

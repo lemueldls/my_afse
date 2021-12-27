@@ -20,7 +20,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v1
         with:
-          flutter-version: 2.5.3
+          flutter-version: 2.8.1
       - run: flutter config --no-analytics
       - run: flutter pub get
 
@@ -31,9 +31,8 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
           echo "${{ secrets.KEYSTORE_PROPERTIES }}" | base64 --decode > android/key.properties
-          echo "${{ secrets.FIREBASE_JSON }}" | base64 --decode > android/app/google-services.json
 
-      # - name: Run Test
+      # - name: Run Tests
       #   run: flutter test
 
       - name: Build APK

@@ -14,7 +14,10 @@ import "../utils/url.dart";
 class WorkCard extends StatefulWidget {
   final String type;
 
-  const WorkCard({final Key? key, required final this.type}) : super(key: key);
+  const WorkCard({
+    required final this.type,
+    final Key? key,
+  }) : super(key: key);
 
   @override
   WorkCardState createState() => WorkCardState();
@@ -27,10 +30,10 @@ class WorkCardState extends State<WorkCard> {
 
   int _count = 0;
 
-  late Future<List> futureWork = api.get("${key}_work");
+  late Future<List<dynamic>> futureWork = api.get("${key}_work");
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     final title = textTheme.headline6;
@@ -50,7 +53,7 @@ class WorkCardState extends State<WorkCard> {
               ),
               child: Text("${widget.type} Work", style: title),
             ),
-            FutureBuilder<List>(
+            FutureBuilder<List<dynamic>>(
               future: futureWork,
               builder: (final context, final snapshot) {
                 if (snapshot.hasError)
@@ -168,8 +171,6 @@ class WorkCardState extends State<WorkCard> {
 
     final link = textTheme.bodyText2!.copyWith(color: theme.primaryColor);
 
-    const empty = SizedBox.shrink();
-
     final description = work.description;
     final code = work.code;
 
@@ -185,48 +186,45 @@ class WorkCardState extends State<WorkCard> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(work.type),
             ),
-            description.isNotEmpty
-                ? Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ExpandableNotifier(
-                      child: ExpandablePanel(
-                        header: const Text("Description:", style: bold),
-                        theme: ExpandableThemeData(
-                          headerAlignment:
-                              ExpandablePanelHeaderAlignment.center,
-                          iconColor: theme.brightness.text,
-                          useInkWell: false,
-                          tapBodyToExpand: true,
-                          tapBodyToCollapse: true,
-                        ),
-                        collapsed: Linkify(
-                          text: work.description,
-                          onOpen: (final link) => launchURL(link.url),
-                          linkStyle: link,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        expanded: Linkify(
-                          text: work.description,
-                          onOpen: (final link) => launchURL(link.url),
-                          linkStyle: link,
-                        ),
-                      ),
+            if (description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: ExpandableNotifier(
+                  child: ExpandablePanel(
+                    header: const Text("Description:", style: bold),
+                    theme: ExpandableThemeData(
+                      headerAlignment: ExpandablePanelHeaderAlignment.center,
+                      iconColor: theme.brightness.text,
+                      useInkWell: false,
+                      tapBodyToExpand: true,
+                      tapBodyToCollapse: true,
                     ),
-                  )
-                : empty,
+                    collapsed: Linkify(
+                      text: work.description,
+                      onOpen: (final link) => launchURL(link.url),
+                      linkStyle: link,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    expanded: Linkify(
+                      text: work.description,
+                      onOpen: (final link) => launchURL(link.url),
+                      linkStyle: link,
+                    ),
+                  ),
+                ),
+              ),
             Row(
               children: [
-                code != null
-                    ? Expanded(
-                        child: Row(
-                          children: [
-                            const Text("Score Code: ", style: bold),
-                            Text(code),
-                          ],
-                        ),
-                      )
-                    : empty,
+                if (code != null)
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Text("Score Code: ", style: bold),
+                        Text(code),
+                      ],
+                    ),
+                  ),
                 Expanded(
                   child: Row(
                     children: [
@@ -248,10 +246,11 @@ class WorkCardState extends State<WorkCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text("Teacher:", style: bold),
                   Row(
                     children: [
                       Expanded(child: Text(work.teacherName)),
-                      Text(work.course),
+                      Expanded(child: Text(work.course)),
                     ],
                   ),
                   Linkify(
@@ -292,29 +291,36 @@ class WorkData {
     required final this.teacherEmail,
   });
 
-  factory WorkData.fromJson(final Map<String, dynamic> data) => WorkData(
-        title: data["title"],
-        course: data["course_name"],
-        description: data["description"],
-        type: data["type"].split(" Assessment")[0],
-        weight: data["weight"].toStringAsFixed(1),
-        code: data["code"],
-        end: DateFormat.MMMMEEEEd().format(
-          DateFormat("y-M-d").parse(data["end_date"]),
-        ),
-        teacherName: data["teacher_name"],
-        teacherEmail: data["teacher_email"],
-      );
+  factory WorkData.fromJson(final Map<String, dynamic> data) {
+    final String type = data["type"];
+    final double weight = data["weight"];
+
+    return WorkData(
+      title: data["title"],
+      course: data["course_name"],
+      description: data["description"],
+      type: type.split(" Assessment")[0],
+      weight: weight.toStringAsFixed(1),
+      code: data["code"],
+      end: DateFormat.MMMMEEEEd().format(
+        DateFormat("y-M-d").parse(data["end_date"]),
+      ),
+      teacherName: data["teacher_name"],
+      teacherEmail: data["teacher_email"],
+    );
+  }
 }
 
 class _WorkCardShimmer extends StatelessWidget {
   final int count;
 
-  const _WorkCardShimmer({final Key? key, required final this.count})
-      : super(key: key);
+  const _WorkCardShimmer({
+    required final this.count,
+    final Key? key,
+  }) : super(key: key);
 
   @override
-  build(final context) => ListView.builder(
+  Widget build(final BuildContext context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(count, 1),

@@ -15,15 +15,15 @@ import "../widgets/work.dart";
 class GradesNodeTree extends StatelessWidget {
   final MasteryScore score;
 
-  const GradesNodeTree({final Key? key, required final this.score})
-      : super(key: key);
+  const GradesNodeTree({
+    required final this.score,
+    final Key? key,
+  }) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
-
-    const empty = SizedBox.shrink();
 
     const colors = {
       "Green": Colors.green,
@@ -33,6 +33,7 @@ class GradesNodeTree extends StatelessWidget {
     };
 
     final bar = Stack(
+      alignment: Alignment.center,
       children: [
         SizedBox(
           height: 20,
@@ -46,7 +47,6 @@ class GradesNodeTree extends StatelessWidget {
           ),
         ),
         Align(
-          alignment: Alignment.center,
           child: Text(
             score.scoreLabel,
             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -59,7 +59,7 @@ class GradesNodeTree extends StatelessWidget {
       final children = score.children!;
 
       final sum = score.sum;
-      // final missing = score.missing;
+      final missing = score.missing;
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -80,50 +80,48 @@ class GradesNodeTree extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
+                          flex: 5,
                           child: Text(
                             "Updated ${score.recent}",
                             style: textTheme.bodyText2!
                                 .copyWith(color: textTheme.caption!.color),
                           ),
                         ),
-                        // sum != 100 ?
-                        Text("=${sum.toStringAsFixed(0)} weight")
-                        // : empty
-                        ,
-
-                        // missing != 0
-                        //     ? Expanded(
-                        //         child: Row(
-                        //           children: [
-                        //             Container(
-                        //               padding: const EdgeInsets.symmetric(
-                        //                 horizontal: 3,
-                        //                 vertical: 2,
-                        //               ),
-                        //               decoration: BoxDecoration(
-                        //                 color: Colors.red,
-                        //                 borderRadius:
-                        //                     BorderRadius.circular(4),
-                        //               ),
-                        //               child: Text(
-                        //                 "$missing missing",
-                        //                 style: const TextStyle(
-                        //                   color: Colors.white,
-                        //                   fontSize: 12,
-                        //                 ),
-                        //               ),
-                        //             )
-                        //           ],
-                        //         ),
-                        //       )
-                        //     : empty,
+                        if (missing != 0)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 20,
+                                  height: 20,
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 3,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade400,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    "$missing",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        Text("=${sum.toStringAsFixed(0)} weight"),
                       ],
                     ),
                   )
                 ],
               ),
             ),
-            collapsed: empty,
+            collapsed: const SizedBox.shrink(),
             expanded: Container(
               decoration: const BoxDecoration(
                 border: Border(left: BorderSide(color: Colors.grey)),
@@ -174,8 +172,6 @@ class GradesNodeTree extends StatelessWidget {
   }
 
   void _selectScore(final BuildContext context, final MasteryScore score) {
-    const empty = SizedBox.shrink();
-
     const bold = TextStyle(fontWeight: FontWeight.bold);
 
     final comment = score.comment;
@@ -188,14 +184,13 @@ class GradesNodeTree extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            comment != null
-                ? Row(
-                    children: [
-                      const Text("Comment: ", style: bold),
-                      Text(comment)
-                    ],
-                  )
-                : empty,
+            if (comment != null)
+              Row(
+                children: [
+                  const Text("Comment: ", style: bold),
+                  Text(comment),
+                ],
+              ),
             Row(
               children: [
                 Expanded(
@@ -276,7 +271,14 @@ class MasteryScore {
 
   factory MasteryScore.fromJson(final Map<String, dynamic> json) {
     final label = json["label"];
-    final List? children = json["children"];
+
+    /// "mastery_bar_percent" could be an `int` or a `double`.
+    /// Why? Because JumpRope. Inconsistent >:(
+    // ignore: avoid_dynamic_calls
+    final double percent = json["mastery_bar_percent"].toDouble();
+    final Map<String, dynamic> threshold = json["threshold_details"];
+    final List<dynamic>? children = json["children"];
+    final double? weight = json["assessment_weight"];
     final String? end = json["assessment_end_date"];
     final String? recent = json["most_recent_date"];
 
@@ -284,12 +286,12 @@ class MasteryScore {
 
     return MasteryScore(
       expanded: json["expanded"] ?? false,
-      label: label is List ? label[0] : label,
+      label: label is List ? label.first : label,
       scoreLabel: json["score_label"],
       color: json["color"],
-      percent: json["mastery_bar_percent"] / 100,
+      percent: percent / 100,
       sum: json["weight_sum"],
-      missing: json["threshold_details"]["missing_count"],
+      missing: threshold["missing_count"],
       children: children
           ?.map((final score) => MasteryScore.fromJson(score))
           .toList(growable: false),
@@ -298,7 +300,7 @@ class MasteryScore {
       recent: recent != null
           ? DateFormat.yMMMEd().format(format.parse(recent))
           : null,
-      weight: json["assessment_weight"]?.toStringAsFixed(1),
+      weight: weight?.toStringAsFixed(1),
       end:
           end != null ? DateFormat.MMMMEEEEd().format(format.parse(end)) : null,
       modified: DateFormat.yMMMMEEEEd().add_jm().format(
@@ -310,18 +312,20 @@ class MasteryScore {
   }
 
   @override
-  toString() =>
-      "{ $expanded, $label, $scoreLabel, $color, $percent, $sum, $missing, $children, $title, $comment, $recent, $weight, $end, $modified }";
+  String toString() =>
+      """{ $expanded, $label, $scoreLabel, $color, $percent, $sum, $missing, $children, $title, $comment, $recent, $weight, $end, $modified }""";
 }
 
 class _GradesPageShimmer extends StatelessWidget {
   final int scores;
 
-  const _GradesPageShimmer({final Key? key, required final this.scores})
-      : super(key: key);
+  const _GradesPageShimmer({
+    required final this.scores,
+    final Key? key,
+  }) : super(key: key);
 
   @override
-  build(final context) => ListView.builder(
+  Widget build(final BuildContext context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(scores, 1),
@@ -392,13 +396,13 @@ class _GradesPageState extends State<GradesPage> {
 
   int _scores = 7;
 
-  late Future<List> _futureMastery = api.get("student_mastery_cache");
+  late Future<List<dynamic>> _futureMastery = api.get("student_mastery_cache");
 
   final _upcomingKey = LabeledGlobalKey<WorkCardState>("Upcoming");
   final _missingKey = LabeledGlobalKey<WorkCardState>("Missing");
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return SmartRefresher(
@@ -416,7 +420,7 @@ class _GradesPageState extends State<GradesPage> {
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: FutureBuilder<List>(
+                    child: FutureBuilder<List<dynamic>>(
                       future: _futureMastery,
                       builder: (final context, final snapshot) {
                         if (snapshot.hasError)
@@ -429,8 +433,9 @@ class _GradesPageState extends State<GradesPage> {
                         if (snapshot.connectionState == ConnectionState.waiting)
                           return _GradesPageShimmer(scores: _scores);
 
-                        final data = snapshot.data![0];
-                        final List scoreData = jsonDecode(data["score_data"]);
+                        final Map<String, dynamic> data = snapshot.data![0];
+                        final List<dynamic> scoreData =
+                            jsonDecode(data["score_data"]);
 
                         _saveScores(scoreData.length);
 

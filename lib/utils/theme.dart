@@ -26,7 +26,7 @@ class ThemeChanger extends ChangeNotifier {
     final prefs = await _prefs;
 
     await prefs.setInt("color", color.value);
-    await updateSettings();
+    await initializeSettings();
   }
 
   Future<void> setDark(final bool dark) async {
@@ -37,6 +37,6 @@ class ThemeChanger extends ChangeNotifier {
     final prefs = await _prefs;
 
     await prefs.setBool("dark", dark);
-    await updateSettings();
+    await initializeSettings();
   }
 }

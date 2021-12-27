@@ -8,13 +8,13 @@ class PageScaffold extends StatelessWidget {
   final Widget page;
 
   const PageScaffold({
-    final Key? key,
     required final this.title,
     required final this.page,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     _checkUpdates(context);
 
     final _scaffoldKey = LabeledGlobalKey<ScaffoldState>("Scaffold");
@@ -31,6 +31,7 @@ class PageScaffold extends StatelessWidget {
           if (scaffoldState.isDrawerOpen)
             Navigator.of(context).pop();
           else
+            // Use the back button to open the drawer.
             scaffoldState.openDrawer();
 
           return false;
@@ -41,18 +42,20 @@ class PageScaffold extends StatelessWidget {
   }
 
   Future<void> _checkUpdates(final BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+
     await updater.checkLatest();
 
     if (!updater.prompt || updater.dismissed) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
         content: const Text("A new version is now avaliable"),
         behavior: SnackBarBehavior.floating,
         onVisible: () => updater.dismissed = true,
-        action: SnackBarAction(
+        action: const SnackBarAction(
           label: "UPDATE",
-          onPressed: () => updater.update(),
+          onPressed: updater.update,
         ),
       ),
     );

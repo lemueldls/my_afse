@@ -1,4 +1,3 @@
-import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 
 import "../extensions/brightness.dart";
@@ -15,16 +14,16 @@ class DrawerListTile extends StatelessWidget {
   final GestureTapCallback? onTap;
 
   const DrawerListTile({
-    final Key? key,
     required final this.route,
     final this.icon = true,
     final this.title,
     final this.subtitle,
     final this.onTap,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final currentRoute = ModalRoute.of(context)!.settings.name;
     final pageRoute = pageRoutes[route]!;
 
@@ -54,7 +53,7 @@ class PageDrawer extends StatelessWidget {
   const PageDrawer({final Key? key}) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final selectedColor = theme.brightness.text;
     final selectedTileColor = theme.primaryColor.withAlpha(85);
@@ -96,28 +95,26 @@ class PageDrawer extends StatelessWidget {
                 shrinkWrap: true,
                 physics: clamping,
                 children: [
-                  updater.prompt
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: TextButtonTheme(
-                            data: TextButtonThemeData(
-                              style: TextButton.styleFrom(primary: contrast),
+                  if (updater.prompt)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: TextButtonTheme(
+                        data: TextButtonThemeData(
+                          style: TextButton.styleFrom(primary: contrast),
+                        ),
+                        child: MaterialBanner(
+                          contentTextStyle: TextStyle(color: contrast),
+                          content: const Text("A new version is now avaliable"),
+                          leading: Icon(Icons.download, color: contrast),
+                          actions: const [
+                            TextButton(
+                              onPressed: updater.update,
+                              child: Text("UPDATE"),
                             ),
-                            child: MaterialBanner(
-                              contentTextStyle: TextStyle(color: contrast),
-                              content:
-                                  const Text("A new version is now avaliable"),
-                              leading: Icon(Icons.download, color: contrast),
-                              actions: [
-                                TextButton(
-                                  child: const Text("UPDATE"),
-                                  onPressed: () => updater.update(),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
+                          ],
+                        ),
+                      ),
+                    ),
                   DrawerListTile(
                     route: "/login",
                     onTap: () => _logout(context),
@@ -145,9 +142,8 @@ class PageDrawer extends StatelessWidget {
               TextButton(
                 onPressed: () async {
                   await api.logout();
-                  await FirebaseAuth.instance.signOut();
 
-                  navigator.pushNamedAndRemoveUntil(
+                  await navigator.pushNamedAndRemoveUntil(
                     "/login",
                     (final route) => false,
                   );

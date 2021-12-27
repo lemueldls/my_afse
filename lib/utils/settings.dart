@@ -10,16 +10,18 @@ late Settings settings;
 
 final _prefs = SharedPreferences.getInstance();
 
-Future<void> updateSettings() async {
+/// Initialize page and theme with local settings,
+/// otherwise using default values.
+Future<void> initializeSettings() async {
   final prefs = await _prefs;
 
-  String? page = prefs.getString("page");
+  var page = prefs.getString("page");
   if (page == null) await prefs.setString("page", page = "/home");
 
-  int? color = prefs.getInt("color");
+  var color = prefs.getInt("color");
   if (color == null) await prefs.setInt("color", color = 0xff007bb0);
 
-  bool? dark = prefs.getBool("dark");
+  var dark = prefs.getBool("dark");
   if (dark == null)
     await prefs.setBool(
       "dark",

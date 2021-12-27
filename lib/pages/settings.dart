@@ -1,8 +1,8 @@
 import "package:flutter/material.dart";
 import "package:flutter_colorpicker/flutter_colorpicker.dart";
+import "package:flutter_settings_ui/flutter_settings_ui.dart";
 import "package:package_info_plus/package_info_plus.dart";
 import "package:provider/provider.dart";
-import "package:settings_ui/settings_ui.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 import "../utils/routes.dart";
@@ -25,7 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late Color _color;
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Provider.of<ThemeChanger>(context);
 
     _dark = theme.dark;
@@ -89,13 +89,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsTile(
                   title: "Default Page",
                   leading: const Icon(Icons.pages),
-                  trailing: DropdownButton(
+                  trailing: DropdownButton<String>(
                     value: _page,
-                    onChanged: (final String? page) async {
+                    onChanged: (final page) async {
                       setState(() => _page = page!);
 
                       final prefs = await _prefs;
-                      prefs.setString("page", page!);
+                      await prefs.setString("page", page!);
                     },
                     items: pageItems.map(
                       (final route) {
@@ -107,7 +107,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(right: 16),
-                                child: page.icon!,
+                                child: page.icon,
                               ),
                               Text(page.title),
                             ],
@@ -130,6 +130,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   onPressed: (final context) async {
                     final info = await PackageInfo.fromPlatform();
 
+                    if (!mounted) return;
+
                     showAboutDialog(
                       context: context,
                       applicationVersion: info.version,
@@ -150,6 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 text: "\n\nMade By: ",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
+                              // Yours truly
                               TextSpan(text: "Lemuel De Los Santos"),
                             ],
                           ),
@@ -173,7 +176,7 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (final context) => AlertDialog(
         actionsPadding: const EdgeInsets.only(right: 6),
-        // title: const Text("Pick a color!""),
+        // title: const Text("Pick a color!"),
         content: SingleChildScrollView(
           child: MaterialPicker(
             enableLabel: true,

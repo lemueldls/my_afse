@@ -17,6 +17,8 @@ import "../widgets/error.dart";
 const cellSize = 48.0;
 const dateWidth = cellSize * 2.25;
 
+/// Parses the attendance sheet as a HTML document
+/// because I can't get any direct data from the API.
 class AttendanceData {
   final List<Day> table;
   final int columns;
@@ -27,6 +29,7 @@ class AttendanceData {
   });
 
   factory AttendanceData.parseData(final String html) {
+    /// C O L O R S
     const colors = {
       "P": Colors.green,
       "E": Colors.grey,
@@ -34,19 +37,26 @@ class AttendanceData {
       "A": Colors.red,
     };
 
+    /// Parsed HTML into table rows
     final rows =
         parseHtmlDocument(html).querySelectorAll("#submission tr").skip(1);
 
     final data = rows
         .map((final row) => (row.innerText.trim().split("\n").length - 4) / 2);
+
+    /// Counted number of columns.
     final columns = data.isNotEmpty ? data.reduce(max).toInt() : 0;
 
+    /// List of days.
     final table = rows.map((final row) {
       final tds = row.querySelectorAll("td");
 
       final date = DateFormat("y-M-d").parse(tds.first.innerText);
 
+      /// List of periods per day.
       final day = tds.sublist(3, columns + 3).map((final td) {
+        /// Title can be empty if the period cell dosn't exist,
+        /// or formatted as `Title - Teacher - Name` instead.
         final title = td.title!;
 
         if (title.isNotEmpty) {
@@ -75,7 +85,7 @@ class AttendanceData {
   }
 
   @override
-  toString() => table.toString();
+  String toString() => table.toString();
 }
 
 class AttendancePage extends StatefulWidget {
@@ -89,10 +99,13 @@ class Day {
   final DateTime date;
   final Iterable<Period?> data;
 
-  const Day({required final this.date, required final this.data});
+  const Day({
+    required final this.date,
+    required final this.data,
+  });
 
   @override
-  toString() => "{ $date, $data }";
+  String toString() => "{ $date, $data }";
 }
 
 class Period {
@@ -111,7 +124,7 @@ class Period {
   });
 
   @override
-  toString() => "{ $title, $teacher, $name }";
+  String toString() => "{ $title, $teacher, $name }";
 }
 
 class PeriodCell extends StatelessWidget {
@@ -119,13 +132,13 @@ class PeriodCell extends StatelessWidget {
   final DateTime date;
 
   const PeriodCell({
-    final Key? key,
     required final this.period,
     required final this.date,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final hasPeriod = period != null;
 
     return Material(
@@ -141,7 +154,7 @@ class PeriodCell extends StatelessWidget {
                   period!.letter,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 )
-              : const SizedBox.shrink(),
+              : null,
         ),
       ),
     );
@@ -191,10 +204,10 @@ class TableBody extends StatefulWidget {
   final int columns;
 
   const TableBody({
-    final Key? key,
     required final this.scrollController,
     required final this.table,
     required final this.columns,
+    final Key? key,
   }) : super(key: key);
 
   @override
@@ -207,14 +220,14 @@ class TableCell extends StatelessWidget {
   final Alignment alignment;
 
   const TableCell({
-    final Key? key,
     required final this.value,
     final this.width = cellSize,
     final this.alignment = Alignment.center,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) => Container(
+  Widget build(final BuildContext context) => Container(
         width: width,
         height: cellSize,
         alignment: alignment,
@@ -228,17 +241,17 @@ class TableHead extends StatelessWidget {
   final int columns;
 
   const TableHead({
-    final Key? key,
     required final this.scrollController,
     required final this.columns,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) => Container(
+  Widget build(final BuildContext context) => Container(
         height: cellSize,
         decoration: const BoxDecoration(
           border: Border(
-            bottom: BorderSide(width: 1, color: Colors.grey),
+            bottom: BorderSide(color: Colors.grey),
           ),
         ),
         child: Row(
@@ -264,13 +277,13 @@ class _AttendancePageShimmer extends StatelessWidget {
   final int columns;
 
   const _AttendancePageShimmer({
-    final Key? key,
     required final this.rows,
     required final this.columns,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     const never = NeverScrollableScrollPhysics();
@@ -328,7 +341,7 @@ class _AttendancePageState extends State<AttendancePage> {
   late Future<AttendanceData> _futureAttendance = _fetchAttendance();
 
   @override
-  build(final context) => SmartRefresher(
+  Widget build(final BuildContext context) => SmartRefresher(
         physics: const BouncingScrollPhysics(),
         controller: _refreshController,
         onRefresh: _refresh,
@@ -428,7 +441,7 @@ class _TableBodyState extends State<TableBody> {
   late final ScrollController _restColumnsController = _controllers.addAndGet();
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final table = widget.table;
     final columns = widget.columns;
 
@@ -439,7 +452,7 @@ class _TableBodyState extends State<TableBody> {
         Container(
           decoration: const BoxDecoration(
             border: Border(
-              right: BorderSide(width: 1, color: Colors.grey),
+              right: BorderSide(color: Colors.grey),
             ),
           ),
           width: dateWidth,

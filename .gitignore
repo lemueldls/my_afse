@@ -1,5 +1,3 @@
-publish.sh
-
 ### Android ###
 # Built application files
 *.apk
@@ -63,9 +61,6 @@ captures/
 .externalNativeBuild
 .cxx/
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
-
 # Freeline
 freeline.py
 freeline/
@@ -126,6 +121,10 @@ doc/api/
 .flutter-plugins
 .flutter-plugins-dependencies
 
+### Dart Patch ###
+# dotenv environment variables file
+.env
+
 ### DartEditor ###
 .project
 .buildlog
@@ -138,7 +137,7 @@ doc/api/
 .pub/
 coverage/
 lib/generated_plugin_registrant.dart
-# For library packages, don't commit the pubspec.lock file.
+# For library packages, don’t commit the pubspec.lock file.
 # Regenerating the pubspec.lock file lets you test your package against the latest compatible versions of its dependencies.
 # See https://dart.dev/guides/libraries/private-files#pubspeclock
 #pubspec.lock
@@ -368,6 +367,9 @@ Temporary Items
 # Ignore all local history of files
 .history
 .ionide
+
+# Support for Project snippet scope
+!.vscode/*.code-snippets
 
 ### Windows ###
 # Windows thumbnail cache files

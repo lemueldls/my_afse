@@ -1,9 +1,4 @@
 extension MaybeList<E> on List<E> {
-  // bool some(bool test(int index, E element)) {
-  //   int index = 0;
-
-  //   return this.any((element) => test(index++, element));
-  // }
-
+  /// A null safe `get`.
   E? tryGet(final int index) => asMap().containsKey(index) ? this[index] : null;
 }

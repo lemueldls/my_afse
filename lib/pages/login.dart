@@ -1,12 +1,8 @@
-import "package:firebase_auth/firebase_auth.dart";
-import "package:firebase_database/firebase_database.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-import "../utils/analytics.dart";
 import "../utils/api.dart" as api;
 import "../utils/settings.dart";
-import "../utils/student.dart";
 
 class LoginPage extends StatefulWidget {
   const LoginPage({final Key? key}) : super(key: key);
@@ -16,14 +12,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _auth = FirebaseAuth.instance;
   final _formKey = LabeledGlobalKey<FormState>("Form");
 
   final _prefs = SharedPreferences.getInstance();
 
+  /// Validator for email.
   final _emailFilter = TextEditingController();
+
+  /// Validator for password.
   final _passwordFilter = TextEditingController();
 
+  /// Keyboard focus
   final _focus = FocusNode();
 
   String _email = "";
@@ -32,50 +31,12 @@ class _LoginPageState extends State<LoginPage> {
   String _error = "";
   bool _loading = false;
 
-  Future<void> authencate(final String username, final String password) async {
-    final student = await fetchStudent();
-
-    final id = student["id"].toString();
-
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: username,
-        password: password,
-      );
-
-      await analytics?.logLogin();
-    } on FirebaseAuthException catch (error) {
-      switch (error.code) {
-        case "user-not-found":
-          final db = FirebaseDatabase.instance;
-
-          await db.setPersistenceEnabled(true);
-          await db.reference().child("users").child(id).set(student);
-
-          await _auth.createUserWithEmailAndPassword(
-            email: username,
-            password: password,
-          );
-
-          await analytics?.logSignUp(signUpMethod: "email");
-
-          break;
-
-        default:
-          _error = error.message!;
-          break;
-      }
-    } on Exception catch (error) {
-      _error = error.toString();
-    }
-
-    await analytics?.setUserId(id);
-
+  void authencate(final String username, final String password) {
     Navigator.of(context).pushReplacementNamed(settings.page);
   }
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -108,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                                 "assets/img/jumprope.webp",
                                 width: 25,
                                 height: 25,
-                                color: IconTheme.of(context).color!,
+                                color: IconTheme.of(context).color,
                               ),
                             ),
                             Text(
@@ -176,28 +137,6 @@ class _LoginPageState extends State<LoginPage> {
                               : const Text("LOGIN"),
                         ),
                       ),
-                      // const Divider(),
-                      // ElevatedButton(
-                      //   style: ElevatedButton.styleFrom(primary: Colors.white),
-                      //   child: Row(
-                      //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     children: [
-                      //       Padding(
-                      //         padding: const EdgeInsets.only(right: 24),
-                      //         child: Image.asset(
-                      //           "assets/img/google.png",
-                      //           width: 18,
-                      //           height: 18,
-                      //         ),
-                      //       ),
-                      //       const Text(
-                      //         "Sign in with Google",
-                      //         style: TextStyle(color: Colors.black),
-                      //       ),
-                      //     ],
-                      //   ),
-                      //   onPressed: () => _googleSignIn(),
-                      // ),
                     ],
                   ),
                 ),
@@ -244,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString("username", username);
       await prefs.setString("auth", _password);
 
-      await authencate(username, _password);
+      authencate(username, _password);
     } else
       setState(() => _error = login.message!);
 

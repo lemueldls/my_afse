@@ -44,13 +44,11 @@ class NewsCardsState extends State<NewsCards> {
   late Future<NewsData> futureNews = _fetchNews();
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
     final link = textTheme.bodyText2!.copyWith(color: theme.primaryColor);
-
-    const empty = SizedBox.shrink();
 
     return FutureBuilder<NewsData>(
       future: futureNews,
@@ -60,7 +58,7 @@ class NewsCardsState extends State<NewsCards> {
           return _NewsCardShimmer(news: _news);
 
         final news = snapshot.data!.news;
-        final length = min(news.length, 3);
+        final length = news.length;
 
         _saveNews(length);
 
@@ -102,38 +100,35 @@ class NewsCardsState extends State<NewsCards> {
                                       item.title,
                                       style: textTheme.subtitle1,
                                     ),
-                                    description != null
-                                        ? Linkify(
-                                            text: description,
-                                            onOpen: (final link) =>
-                                                launchURL(link.url),
-                                            linkStyle: link,
-                                            style: TextStyle(
-                                              color: textTheme.caption!.color,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 3,
-                                          )
-                                        : empty,
+                                    if (description != null)
+                                      Linkify(
+                                        text: description,
+                                        onOpen: (final link) =>
+                                            launchURL(link.url),
+                                        linkStyle: link,
+                                        style: TextStyle(
+                                          color: textTheme.caption!.color,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 3,
+                                      ),
                                   ],
                                 ),
                               ),
-                              image != null
-                                  ? Expanded(
-                                      flex: 0,
-                                      child: CachedNetworkImage(
-                                        alignment: Alignment.topCenter,
-                                        imageUrl: image,
-                                        placeholder:
-                                            (final context, final url) =>
-                                                const CustomShimmer(
-                                          width: 75,
-                                          height: 40,
-                                          radius: 0,
-                                        ),
-                                      ),
-                                    )
-                                  : empty
+                              if (image != null)
+                                Expanded(
+                                  flex: 0,
+                                  child: CachedNetworkImage(
+                                    alignment: Alignment.topCenter,
+                                    imageUrl: image,
+                                    placeholder: (final context, final url) =>
+                                        const CustomShimmer(
+                                      width: 75,
+                                      height: 40,
+                                      radius: 0,
+                                    ),
+                                  ),
+                                )
                             ],
                           ),
                           Row(
@@ -200,16 +195,24 @@ class NewsData {
   factory NewsData.parseData(final String data) {
     final now = DateTime.now();
 
+    final news = RssFeed.parse(data)
+        .items!
+        // Keep news within 31 days in the past.
+        .where((final item) => now.difference(item.pubDate!).inDays <= 31)
+        .toList(growable: false)
+      // Sort by the most recent news.
+      ..sort((final a, final b) => b.pubDate!.compareTo(a.pubDate!));
+
     return NewsData(
-      news: RssFeed.parse(data)
-          .items!
-          .where((final item) => now.difference(item.pubDate!).inDays <= 31)
+      news: news
+          .take(5)
           .map(
+            // Use and format only the first 5 news.
             (final item) => News(
               title: item.title!,
               description: item.description,
               date: DateFormat.MMMMd().format(item.pubDate!),
-              image: item.media!.contents!.tryGet(0)?.url!,
+              image: item.media!.contents!.tryGet(0)?.url,
               url: item.link!,
             ),
           )
@@ -221,11 +224,13 @@ class NewsData {
 class _NewsCardShimmer extends StatelessWidget {
   final int news;
 
-  const _NewsCardShimmer({final Key? key, required final this.news})
-      : super(key: key);
+  const _NewsCardShimmer({
+    required final this.news,
+    final Key? key,
+  }) : super(key: key);
 
   @override
-  build(final context) => ListView.builder(
+  Widget build(final BuildContext context) => ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: max(news, 1),

@@ -40,33 +40,40 @@ class PeriodListView extends StatefulWidget {
   final bool today;
 
   const PeriodListView({
-    final Key? key,
     required final this.day,
     required final this.today,
+    final Key? key,
   }) : super(key: key);
 
   @override
   _PeriodListViewState createState() => _PeriodListViewState();
 }
 
+/// Parses the schedule sheet as a HTML document
+/// because I can't get any direct data from the API.
 class ScheduleData {
   final List<String> times;
   final List<List<Period>> schedule;
 
-  const ScheduleData({required final this.times, required final this.schedule});
+  const ScheduleData({
+    required final this.times,
+    required final this.schedule,
+  });
 
   factory ScheduleData.parseData(final String html) {
     final table = parseHtmlDocument(html).querySelector("table");
 
+    /// A list of times for every period.
     final times = table!
         .getElementsByClassName("period-time-label")
         .map((final time) => time.text!)
         .toList(growable: false);
 
-    final List<List<Period>> schedule = [];
+    /// A list of days.
+    final schedule = <List<Period>>[];
 
-    for (int i = 2; i < DateTime.daysPerWeek; i++) {
-      final List<Period> day = [];
+    for (var i = 2; i < DateTime.daysPerWeek; i++) {
+      final day = <Period>[];
 
       table
           .querySelectorAll("tr td:nth-child($i)")
@@ -74,7 +81,12 @@ class ScheduleData {
           .forEach((final row, final cell) {
         if (cell.className != "cell-with-data") return;
 
+        /// Time associated with this period cell.
+        /// If none matches, it will use last period's time.
         final timeRow = times.tryGet(row) ?? times.last;
+
+        /// Time of period parsed into a more readable format.
+        /// Example: `["1:40 PM", "2:20 PM"]`
         final time = timeRow.split("-").map((final time) {
           final start = int.parse(time.split(":")[0]);
 
@@ -91,14 +103,16 @@ class ScheduleData {
         final teachers = data[1];
         final room = data.tryGet(2);
 
-        day.add(Period(
-          index: row,
-          name: name,
-          start: time[0],
-          end: time[1],
-          teachers: teachers == "None" ? null : teachers.split(", "),
-          room: room?.split("Room ")[1] ?? room,
-        ));
+        day.add(
+          Period(
+            index: row,
+            name: name,
+            start: time[0],
+            end: time[1],
+            teachers: teachers == "None" ? null : teachers.split(", "),
+            room: room?.split("Room ")[1] ?? room,
+          ),
+        );
       });
 
       schedule.add(day);
@@ -118,10 +132,11 @@ class SchedulePage extends StatefulWidget {
 class _PeriodListViewState extends State<PeriodListView> {
   int? _selectedIndex;
 
+  /// Timer used to wait for the next period to highlight.
   Timer? _timer;
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final day = widget.day;
     final today = widget.today;
 
@@ -129,9 +144,8 @@ class _PeriodListViewState extends State<PeriodListView> {
     final selectedColor = theme.primaryColorBrightness.text;
     final selectedTileColor = theme.primaryColor;
 
-    const empty = SizedBox.shrink();
-
     if (today) {
+      /// Update the currently selected period.
       void update() {
         final now = DateTime.now();
 
@@ -184,17 +198,17 @@ class _PeriodListViewState extends State<PeriodListView> {
             ),
             title: Row(
               children: [
-                width >= 750
-                    ? SizedBox(
-                        width: 200,
-                        child: Text(
-                          "${period.start} \u2013 ${period.end}",
-                          style: selected
-                              ? null
-                              : TextStyle(color: Colors.grey.shade400),
-                        ),
-                      )
-                    : empty,
+                // Show time for bigger screens.
+                if (width >= 750)
+                  SizedBox(
+                    width: 200,
+                    child: Text(
+                      "${period.start} \u2013 ${period.end}",
+                      style: selected
+                          ? null
+                          : TextStyle(color: Colors.grey.shade400),
+                    ),
+                  ),
                 Flexible(child: Text(period.name)),
               ],
             ),
@@ -219,8 +233,6 @@ class _PeriodListViewState extends State<PeriodListView> {
 
     final hasRoom = room != null;
     final hasTeachers = teachers != null;
-
-    const empty = SizedBox.shrink();
 
     showDialog(
       context: context,
@@ -251,31 +263,28 @@ class _PeriodListViewState extends State<PeriodListView> {
                 ),
               ],
             ),
-            hasRoom || hasTeachers
-                ? const Padding(padding: EdgeInsets.symmetric(vertical: 4))
-                : empty,
-            hasRoom
-                ? Row(
-                    children: [
-                      const Text(
-                        "Room: ",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(room!),
-                    ],
-                  )
-                : empty,
-            hasTeachers
-                ? Wrap(
-                    children: [
-                      Text(
-                        "Teacher${teachers!.length > 1 ? "s" : ""}: ",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(teachers.join(", ")),
-                    ],
-                  )
-                : empty,
+            if (hasRoom || hasTeachers)
+              const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+            if (hasRoom)
+              Row(
+                children: [
+                  const Text(
+                    "Room: ",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(room!),
+                ],
+              ),
+            if (hasTeachers)
+              Wrap(
+                children: [
+                  Text(
+                    "Teacher${teachers!.length > 1 ? "s" : ""}: ",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(teachers.join(", ")),
+                ],
+              ),
           ],
         ),
       ),
@@ -291,6 +300,7 @@ class _PeriodListViewState extends State<PeriodListView> {
       now.month,
       now.day,
       parsed.hour,
+      // Update 3 minutes before class ends
       parsed.minute - 3,
     );
   }
@@ -300,12 +310,12 @@ class _SchedulePageShimmer extends StatelessWidget {
   final int periods;
 
   const _SchedulePageShimmer({
-    final Key? key,
     required final this.periods,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) => Column(
+  Widget build(final BuildContext context) => Column(
         children: [
           const CustomShimmer(padding: EdgeInsets.all(28)),
           const Divider(height: 1),
@@ -321,7 +331,6 @@ class _SchedulePageShimmer extends StatelessWidget {
             itemBuilder: (final context, final index) => const ListTile(
               leading: CustomShimmer(
                 width: 16,
-                height: 16,
                 padding: EdgeInsets.only(top: 3.5),
               ),
               title: CustomShimmer(),
@@ -342,11 +351,12 @@ class _SchedulePageState extends State<SchedulePage> {
 
   late Future<ScheduleData> _futureSchedule = _fetchSchedule();
 
+  /// Timer used to switch to the currect day.
   Timer? _timer;
   int _currentDay = min((DateTime.now().weekday - 1) % 6, DateTime.friday - 1);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
     final title = Theme.of(context).textTheme.headline6;
@@ -380,9 +390,9 @@ class _SchedulePageState extends State<SchedulePage> {
                   () => setState(() => ++_currentDay),
                 );
 
-                final maxPeriods = schedule.fold(
+                final maxPeriods = schedule.fold<int>(
                   0,
-                  (final int value, final day) => max(value, day.length),
+                  (final value, final day) => max(value, day.length),
                 );
 
                 return CarouselSlider.builder(

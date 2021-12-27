@@ -12,8 +12,9 @@ import "./constants.dart";
 
 final _prefs = SharedPreferences.getInstance();
 
-Future? _validated;
+Future<bool>? _validated;
 
+/// Fetch from the JumpRope API.
 Future<List<API>> get<API>(final String api) async {
   final prefs = await _prefs;
 
@@ -31,9 +32,12 @@ Future<List<API>> get<API>(final String api) async {
     },
   );
 
-  if (response.statusCode == 200)
-    return jsonDecode(utf8.decode(response.bodyBytes))["results"];
-  else {
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data =
+        jsonDecode(utf8.decode(response.bodyBytes));
+
+    return data["results"];
+  } else {
     _validated = null;
     await validate(token!);
 
@@ -42,7 +46,9 @@ Future<List<API>> get<API>(final String api) async {
 }
 
 Future<LoginResponse> login(
-    final String username, final String password) async {
+  final String username,
+  final String password,
+) async {
   final prefs = await _prefs;
 
   try {
@@ -56,7 +62,7 @@ Future<LoginResponse> login(
           ..followRedirects = false
           ..headers.addAll(headers);
 
-    final http.StreamedResponse response = await request.send();
+    final response = await request.send();
 
     if (response.statusCode == 200) {
       final error = parseHtmlDocument(await response.stream.bytesToString())
@@ -86,21 +92,25 @@ Future<void> logout() async {
 
   final prefs = await _prefs;
 
+  /// Avoid crisis hacking.
   final crisis = prefs.getStringList("crisis") ?? const [""];
   await prefs.clear();
   await prefs.setStringList("crisis", crisis);
 }
 
+/// Check if the current token is expired or not.
 Future<ValidateResponse> validate(final String token) async {
   final prefs = await _prefs;
 
   final username = prefs.getString("username");
 
-  if (await _validated == true)
+  if (await _validated ?? false)
     return ValidateResponse(success: true, username: username);
 
-  // I hope this is smart
-  final completer = Completer();
+  /// Set the validation state to an asynchronous value so we only
+  /// have to send a network request to check once, when multiple
+  /// validations are also running at the same time.
+  final completer = Completer<bool>();
   _validated = completer.future;
 
   final validateRes = await http.get(
@@ -116,7 +126,11 @@ Future<ValidateResponse> validate(final String token) async {
   } else {
     final user = await login(username!, prefs.getString("auth")!);
 
-    return validate(user.token!);
+    // Recursive validation with a new, working, token.
+    final validated = validate(user.token!);
+    completer.complete(true);
+
+    return validated;
   }
 }
 
@@ -139,7 +153,7 @@ class LoginResponse {
       );
 
   @override
-  toString() => "{ $success, $message, $token }";
+  String toString() => "{ $success, $message, $token }";
 }
 
 class ValidateResponse {

@@ -1,9 +1,10 @@
 import "package:flutter/material.dart";
 
+/// A nicer way of displaying errors.
 class ErrorCard extends StatelessWidget {
   final String error;
 
-  const ErrorCard({final Key? key, required final this.error})
+  const ErrorCard({required final this.error, final Key? key})
       : super(key: key);
 
   @override

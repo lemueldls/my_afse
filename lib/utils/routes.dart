@@ -10,6 +10,7 @@ import "../pages/profile.dart";
 import "../pages/schedule.dart";
 import "../pages/settings.dart";
 
+/// Ease of use page routes.
 const pageRoutes = {
   "/profile": PageRoute(
     title: "Profile",
@@ -53,6 +54,8 @@ class PageRoute {
   final String title;
   final Widget page;
   final Icon? icon;
+
+  /// If the page should be wrapped in a scaffold (app bar).
   final bool wrap;
 
   const PageRoute({

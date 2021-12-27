@@ -1,5 +1,6 @@
 library my_afse.student;
 
+import "dart:async";
 import "dart:convert";
 
 import "package:intl/intl.dart";
@@ -10,27 +11,6 @@ import "api.dart" as api;
 late Student student;
 
 final _prefs = SharedPreferences.getInstance();
-
-Future<Map<String, dynamic>?> updateStudent() async {
-  final prefs = await _prefs;
-
-  final token = prefs.getString("token");
-
-  if (token == null)
-    return null;
-  else
-    api.validate(token);
-
-  final localStudent = prefs.getString("student");
-  if (localStudent != null) {
-    final data = jsonDecode(localStudent);
-    student = Student.fromJson(data);
-
-    return data;
-  }
-
-  return fetchStudent();
-}
 
 Future<Map<String, dynamic>> fetchStudent() async {
   final prefs = await _prefs;
@@ -43,6 +23,29 @@ Future<Map<String, dynamic>> fetchStudent() async {
   return data;
 }
 
+/// Loads the student data, if any,
+/// and returns if the user is logged in.
+Future<bool> initializeStudent() async {
+  final prefs = await _prefs;
+
+  final token = prefs.getString("token");
+
+  if (token == null) return false;
+
+  // Validate token in the background
+  unawaited(api.validate(token));
+
+  final localStudent = prefs.getString("student");
+  if (localStudent != null) {
+    final data = jsonDecode(localStudent);
+
+    student = Student.fromJson(data);
+  } else
+    await fetchStudent();
+
+  return true;
+}
+
 class Student {
   final String modified;
   final String school;
@@ -52,7 +55,7 @@ class Student {
   final String firstName;
   final String lastName;
   final int adviser;
-  final List followers;
+  final List<dynamic> followers;
   final String officialClass;
   final String status;
   final String email;
@@ -76,28 +79,32 @@ class Student {
     // required final this.annotations,
   });
 
-  factory Student.fromJson(final Map<String, dynamic> json) => Student(
-        modified: DateFormat.yMMMEd().add_jm().format(
-              DateFormat("yyyy-MM-ddTHH:mm:ss").parseUtc(
-                json["time_modified"],
-              ),
-            ),
-        school: json["school"],
-        id: json["id"],
-        externalId: json["external_id"],
-        label: json["label"],
-        firstName: json["first_name"],
-        lastName: json["last_name"],
-        adviser: json["user"],
-        followers: json["followers"],
-        officialClass: json["official_class"],
-        status: json["status"],
-        email: json["google_account"],
-        // sections: json["sections"],
-        // annotations: json["annotations"],
-      );
+  factory Student.fromJson(final Map<String, dynamic> json) {
+    final dateFormat = DateFormat.yMMMEd().add_jm();
+
+    return Student(
+      modified: dateFormat.format(
+        DateFormat("yyyy-MM-ddTHH:mm:ss").parseUtc(
+          json["time_modified"],
+        ),
+      ),
+      school: json["school"],
+      id: json["id"],
+      externalId: json["external_id"],
+      label: json["label"],
+      firstName: json["first_name"],
+      lastName: json["last_name"],
+      adviser: json["user"],
+      followers: json["followers"],
+      officialClass: json["official_class"],
+      status: json["status"],
+      email: json["google_account"],
+      // sections: json["sections"],
+      // annotations: json["annotations"],
+    );
+  }
 
   @override
-  toString() =>
-      "{ $modified, $school, $id, $externalId, $label, $firstName, $lastName, $adviser, $followers, $officialClass, $status, $email }"; // , $annotations
+  String toString() =>
+      """{ $modified, $school, $id, $externalId, $label, $firstName, $lastName, $adviser, $followers, $officialClass, $status, $email }""";
 }

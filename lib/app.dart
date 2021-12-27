@@ -1,28 +1,29 @@
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
-import "utils/analytics.dart";
 import "utils/constants.dart";
 import "utils/routes.dart";
 import "utils/theme.dart";
 import "widgets/scaffold.dart";
 
+/// Contains logic for initializing theme colors and page routes.
 class App extends StatelessWidget {
   final bool loggedIn;
   final String page;
 
   const App({
-    final Key? key,
     required final this.loggedIn,
     required final this.page,
+    final Key? key,
   }) : super(key: key);
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
+    /// Remapped pages into a routing table.
     final routes = pageRoutes.map(
       (final key, final route) => MapEntry(
         key,
-        (final BuildContext context) {
+        (final context) {
           final page = route.page;
 
           return route.wrap
@@ -32,6 +33,7 @@ class App extends StatelessWidget {
       ),
     );
 
+    // Helpful for starting up a specific page in debug mode.
     const debugPage = production ? null : "/grades";
 
     final theme = Provider.of<ThemeChanger>(context);
@@ -62,7 +64,6 @@ class App extends StatelessWidget {
       ),
       routes: routes,
       initialRoute: loggedIn ? debugPage ?? page : "/login",
-      navigatorObservers: observer,
     );
   }
 
@@ -70,7 +71,7 @@ class App extends StatelessWidget {
     final Set<MaterialState> states,
     final MaterialColor color,
   ) {
-    const interactiveStates = {
+    const interactiveStates = <MaterialState>{
       MaterialState.pressed,
       MaterialState.selected,
       MaterialState.hovered,

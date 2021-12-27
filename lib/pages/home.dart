@@ -26,11 +26,14 @@ class _HomePageState extends State<HomePage> {
   final _eventsKey = LabeledGlobalKey<EventCardsState>("Events");
   final _newsKey = LabeledGlobalKey<NewsCardsState>("News");
 
+  /// Timer used to count when the next `greeting` should update.
   Timer? _timer;
+
+  /// A time based message to greet you.
   String? _greeting;
 
   @override
-  build(final context) {
+  Widget build(final BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     return SmartRefresher(
@@ -107,14 +110,17 @@ class _HomePageState extends State<HomePage> {
         .catchError((final error) => _refreshController.refreshFailed());
   }
 
+  /// Update the greeting timley.
   Future<void> _updateGreeting() async {
     final now = DateTime.now();
 
     final prefs = await _prefs;
 
-    List<String> crisis = prefs.getStringList("crisis") ?? const [""];
+    /// Don't worry about it.
+    var crisis = prefs.getStringList("crisis") ?? const [""];
     final day = now.day;
 
+    /// Haha.. don't open the app at 2 A.M.
     const crises = [
       "What if your life is a lie",
       "Does the universe exist",
@@ -130,32 +136,39 @@ class _HomePageState extends State<HomePage> {
       "Can art be defined",
     ];
 
-    if (int.tryParse(crisis.first) != day) {
+    if (int.tryParse(crisis.first) != day)
       await prefs.setStringList(
         "crisis",
         crisis = [day.toString(), Random().nextInt(crises.length).toString()],
       );
-    }
 
     final index = int.parse(crisis[1]);
     final thoughts = crises[index];
 
     final messages = {
-      1: "Go to SLEEP",
-      5: thoughts,
-      11: "Good Morning",
-      12: "G'Day",
-      16: "Good Afternoon",
-      21: "Good Evening",
-      22: "Sweet Dreams"
+      // 12am - 2am
+      2: "Go to SLEEP",
+      // 2am - 6am
+      6: thoughts,
+      // 6am - 12pm
+      12: "Good Morning",
+      // 12pm - 1pm
+      13: "G'day",
+      // 1pm - 6pm
+      18: "Good Afternoon",
+      // 6pm - 10pm
+      22: "Good Evening",
+      // 10pm - 12am
+      23: "Sweet Dreams"
     };
 
     final hour = now.hour;
 
     final keys = messages.keys;
     final message =
-        keys.where((final time) => time >= hour).toList(growable: false);
+        keys.where((final time) => time > hour).toList(growable: false);
 
+    /// Time until next greeting.
     final next = DateTime(now.year, now.month, now.day, message.tryGet(1) ?? 24)
         .difference(now);
 
