@@ -99,8 +99,6 @@ output.json
 # Files and directories created by pub
 .dart_tool/
 .packages
-# If you're building an application, you may want to check-in your pubspec.lock
-pubspec.lock
 
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
@@ -121,10 +119,6 @@ doc/api/
 .flutter-plugins
 .flutter-plugins-dependencies
 
-### Dart Patch ###
-# dotenv environment variables file
-.env
-
 ### DartEditor ###
 .project
 .buildlog
@@ -137,10 +131,6 @@ doc/api/
 .pub/
 coverage/
 lib/generated_plugin_registrant.dart
-# For library packages, don’t commit the pubspec.lock file.
-# Regenerating the pubspec.lock file lets you test your package against the latest compatible versions of its dependencies.
-# See https://dart.dev/guides/libraries/private-files#pubspeclock
-#pubspec.lock
 
 # Android related
 **/android/**/gradle-wrapper.jar
