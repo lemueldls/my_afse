@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
 
+import "extensions/theming.dart";
+import "utils/analytics.dart";
 import "utils/constants.dart";
 import "utils/routes.dart";
 import "utils/theme.dart";
@@ -33,21 +35,41 @@ class App extends StatelessWidget {
       ),
     );
 
-    // Helpful for starting up a specific page in debug mode.
-    const debugPage = production ? null : "/grades";
+    /// Helpful for starting up a specific page in debug mode.
+    const debugPage = production ? null : "/home";
 
     final theme = Provider.of<ThemeChanger>(context);
 
     final brightness = theme.dark ? Brightness.dark : Brightness.light;
     final color = theme.color;
 
+    final contrast = ThemeData.estimateBrightnessForColor(color);
+
+    final themeData = ThemeData(
+      brightness: brightness,
+      primaryColor: color,
+      primarySwatch: color,
+    );
+
     return MaterialApp(
       title: "My AFSE",
-      theme: ThemeData(
-        brightness: brightness,
-        primaryColor: color,
-        primarySwatch: color,
-        snackBarTheme: SnackBarThemeData(actionTextColor: color),
+      theme: themeData.copyWith(
+        appBarTheme: AppBarTheme(
+          foregroundColor: contrast.text,
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(primary: themeData.primaryContrast),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          actionTextColor:
+              // If the theme is light on dark
+              brightness == Brightness.dark &&
+                      themeData.primaryColorBrightness == Brightness.light
+                  // Use a shade of grey
+                  ? Colors.grey.shade500
+                  // Fallback to the primary color
+                  : null,
+        ),
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: color,
           cardColor: color,
@@ -64,9 +86,11 @@ class App extends StatelessWidget {
       ),
       routes: routes,
       initialRoute: loggedIn ? debugPage ?? page : "/login",
+      navigatorObservers: observer,
     );
   }
 
+  /// Used to get colors for switch states.
   MaterialColor? _getColor(
     final Set<MaterialState> states,
     final MaterialColor color,
@@ -78,6 +102,7 @@ class App extends StatelessWidget {
       MaterialState.focused,
     };
 
+    // If the state is interactive, then return the color.
     if (states.any(interactiveStates.contains)) return color;
   }
 }

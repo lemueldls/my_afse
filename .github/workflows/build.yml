@@ -31,6 +31,7 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
           echo "${{ secrets.KEYSTORE_PROPERTIES }}" | base64 --decode > android/key.properties
+          echo "${{ secrets.FIREBASE_JSON }}" | base64 --decode > android/app/google-services.json
 
       # - name: Run Tests
       #   run: flutter test

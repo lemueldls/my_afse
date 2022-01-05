@@ -1,3 +1,5 @@
+import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_core/firebase_core.dart";
 import "package:flutter/material.dart";
 import "package:flutter_shortcuts/flutter_shortcuts.dart";
 import "package:provider/provider.dart";
@@ -12,8 +14,12 @@ Future<void> main() async {
   // Helps to initialize top-level shared preferences correctly.
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load theme and page settings.
-  await initializeSettings();
+  // Load Firebase, settings, and student.
+  await Future.wait([
+    Firebase.initializeApp(),
+    updateSettings(),
+    initializeStudent(),
+  ]);
 
   // Run the app builder.
   runApp(const AppBuilder());
@@ -32,11 +38,12 @@ class _AppBuilderState extends State<AppBuilder> {
   final shortcuts = FlutterShortcuts();
 
   @override
-  Widget build(final BuildContext context) => FutureBuilder<bool>(
-        future: initializeStudent(),
+  Widget build(final BuildContext context) => StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
         builder: (final context, final snapshot) {
           if (snapshot.hasError) return Text("${snapshot.error}");
           if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show a circular loading indicator
             return MaterialApp(
               theme: ThemeData(
                 brightness: settings.dark ? Brightness.dark : Brightness.light,
@@ -55,8 +62,8 @@ class _AppBuilderState extends State<AppBuilder> {
             child: RefreshConfiguration(
               headerBuilder: () => const WaterDropMaterialHeader(),
               enableRefreshVibrate: true,
-              // Load the app with the authencation state
-              child: App(loggedIn: snapshot.data!, page: _page),
+              // Load app with the current authencation state
+              child: App(loggedIn: snapshot.data != null, page: _page),
             ),
           );
         },
@@ -69,7 +76,7 @@ class _AppBuilderState extends State<AppBuilder> {
     _loadShortcuts();
   }
 
-  /// Listens if the user opens the app using a shortcut, and navigates
+  /// Listens if the user opens the app using a shortcut, and navigates.
   void _loadShortcuts() => shortcuts
     ..initialize()
     ..listenAction((final page) => setState(() => _page = page))

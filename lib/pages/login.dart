@@ -1,8 +1,13 @@
+import "package:firebase_analytics/firebase_analytics.dart";
+import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_database/firebase_database.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
+import "../utils/analytics.dart";
 import "../utils/api.dart" as api;
 import "../utils/settings.dart";
+import "../utils/student.dart";
 
 class LoginPage extends StatefulWidget {
   const LoginPage({final Key? key}) : super(key: key);
@@ -12,6 +17,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _auth = FirebaseAuth.instance;
   final _formKey = LabeledGlobalKey<FormState>("Form");
 
   final _prefs = SharedPreferences.getInstance();
@@ -31,8 +37,50 @@ class _LoginPageState extends State<LoginPage> {
   String _error = "";
   bool _loading = false;
 
-  void authencate(final String username, final String password) {
-    Navigator.of(context).pushReplacementNamed(settings.page);
+  Future<void> authencate(final String username, final String password) async {
+    final navigator = Navigator.of(context);
+
+    final student = await fetchStudent();
+
+    final id = student["id"].toString();
+
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: username,
+        password: password,
+      );
+
+      await analytics?.logLogin();
+    } on FirebaseAuthException catch (error) {
+      switch (error.code) {
+        case "user-not-found":
+          final db = FirebaseDatabase.instance..setPersistenceEnabled(true);
+
+          await db.ref().child("users").child(id).set(student);
+
+          await _auth.createUserWithEmailAndPassword(
+            email: username,
+            password: password,
+          );
+
+          await analytics?.logSignUp(signUpMethod: "email");
+
+          break;
+
+        default:
+          _error = error.message!;
+          break;
+      }
+    } on Exception catch (error) {
+      _error = error.toString();
+    }
+
+    await analytics?.setUserId(
+      id: id,
+      callOptions: AnalyticsCallOptions(global: true),
+    );
+
+    await navigator.pushReplacementNamed(settings.page);
   }
 
   @override
@@ -46,6 +94,8 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
+
+          // Login card
           child: SizedBox(
             width: 375,
             child: Card(
@@ -59,6 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                   autovalidateMode: AutovalidateMode.disabled,
                   child: Column(
                     children: [
+                      // JumpRope subtitle
                       Padding(
                         padding: const EdgeInsets.only(top: 8, bottom: 16),
                         child: Row(
@@ -79,6 +130,8 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       ),
+
+                      // Email input
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: TextFormField(
@@ -93,6 +146,8 @@ class _LoginPageState extends State<LoginPage> {
                           validator: _validateEmail,
                         ),
                       ),
+
+                      // Password input
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: TextFormField(
@@ -100,6 +155,8 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: !_passwordVisible,
                           decoration: InputDecoration(
                             icon: const Icon(Icons.lock),
+
+                            // Password visibility toggle
                             suffixIcon: IconButton(
                               onPressed: () => setState(
                                 () => _passwordVisible = !_passwordVisible,
@@ -118,7 +175,11 @@ class _LoginPageState extends State<LoginPage> {
                           validator: _validatePassword,
                         ),
                       ),
+
+                      // Error text
                       Text(_error, style: const TextStyle(color: Colors.red)),
+
+                      // Login button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -164,6 +225,7 @@ class _LoginPageState extends State<LoginPage> {
     _passwordFilter.addListener(_passwordListen);
   }
 
+  /// Listen for email changes.
   void _emailListen() => _email = _emailFilter.text;
 
   Future<void> _login() async {
@@ -183,20 +245,23 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString("username", username);
       await prefs.setString("auth", _password);
 
-      authencate(username, _password);
+      await authencate(username, _password);
     } else
       setState(() => _error = login.message!);
 
     setState(() => _loading = false);
   }
 
+  /// Handle the next action on enter.
   void _nextFocus(final BuildContext context) =>
       _email.isEmpty && _password.isEmpty
           ? FocusScope.of(context).requestFocus(_focus)
           : _login();
 
+  /// Listen for password changes.
   void _passwordListen() => _password = _passwordFilter.text;
 
+  /// Validate the email address.
   String? _validateEmail(final String? value) {
     if (value == null || value.isEmpty) return "Please enter your email";
 
@@ -209,6 +274,7 @@ class _LoginPageState extends State<LoginPage> {
       return "This is not a valid AFSE email";
   }
 
+  /// Validate the password.
   String? _validatePassword(final String? value) {
     if (value == null || value.isEmpty) return "Please enter your password";
   }
