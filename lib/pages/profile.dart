@@ -3,6 +3,7 @@ import "package:flutter_linkify/flutter_linkify.dart";
 import "package:intl/intl.dart";
 import "package:pull_to_refresh/pull_to_refresh.dart";
 
+import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
@@ -107,6 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Full name
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
@@ -114,11 +116,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: textTheme.headline6,
                       ),
                     ),
+
+                    // Email
                     Text(student.email, style: title),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         children: [
+                          // School name (just because)
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(right: 16),
@@ -142,16 +148,20 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                           ),
+
+                          // OSIS Number
                           Text(student.externalId)
                         ],
                       ),
                     ),
+
                     Row(
                       children: [
                         const Text("Last Modified: ", style: bold),
                         Text(student.modified),
                       ],
                     ),
+
                     Row(
                       children: [
                         const Text("Enrollment: ", style: bold),
@@ -178,6 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
+
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: FutureBuilder<List<dynamic>>(
@@ -200,6 +211,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           );
 
                           final hasFollowers = _followers != 0;
+
+                          // Placeholders
 
                           final teacher = Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -268,13 +281,15 @@ class _ProfilePageState extends State<ProfilePage> {
                               .toList(growable: false);
 
                           final link =
-                              subtitle.copyWith(color: theme.primaryColor);
+                              subtitle.copyWith(color: theme.primaryContrast);
 
                           return Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // Adviser
+
                                 Row(
                                   children: [
                                     Text(adviser.name, style: title),
@@ -295,7 +310,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                     Text(adviser.schedule),
                                   ],
                                 ),
+
+                                // Followers
+
                                 if (hasFollowers) followersText,
+
                                 ListView.builder(
                                   shrinkWrap: true,
                                   physics: const ClampingScrollPhysics(),

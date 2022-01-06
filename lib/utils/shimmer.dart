@@ -5,7 +5,7 @@ import "package:shimmer/shimmer.dart";
 
 import "settings.dart";
 
-/// Loading blocks o' shiny.
+/// Loading blocks o' shiny~
 class CustomShimmer extends StatefulWidget {
   final double? width;
   final double height;

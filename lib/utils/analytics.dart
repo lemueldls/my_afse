@@ -9,10 +9,11 @@ import "routes.dart";
 late final analytics = production ? FirebaseAnalytics.instance : null;
 
 late final List<NavigatorObserver> observer = production
+    // Use analytics when building in production mode.
     ? [
         FirebaseAnalyticsObserver(
           analytics: analytics!,
           nameExtractor: (final settings) => pageRoutes[settings.name]!.title,
         ),
       ]
-    : const [];
+    : const <NavigatorObserver>[];

@@ -6,11 +6,13 @@ import "package:flutter_linkify/flutter_linkify.dart";
 import "package:intl/intl.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-import "../extensions/brightness.dart";
+import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/url.dart";
 
+/// Used to create cards containing information about certain work from the API.
+/// This is made for upcoming and missing work as they have the same format.
 class WorkCard extends StatefulWidget {
   final String type;
 
@@ -95,6 +97,7 @@ class WorkCardState extends State<WorkCard> {
                                 padding: const EdgeInsets.all(8),
                                 child: Column(
                                   children: [
+                                    // Title
                                     Row(
                                       children: [
                                         Expanded(
@@ -108,6 +111,8 @@ class WorkCardState extends State<WorkCard> {
                                         Text(work.type),
                                       ],
                                     ),
+
+                                    // Description
                                     Row(
                                       children: [
                                         Expanded(
@@ -169,7 +174,7 @@ class WorkCardState extends State<WorkCard> {
 
     const bold = TextStyle(fontWeight: FontWeight.bold);
 
-    final link = textTheme.bodyText2!.copyWith(color: theme.primaryColor);
+    final link = textTheme.bodyText2!.copyWith(color: theme.primaryContrast);
 
     final description = work.description;
     final code = work.code;
@@ -182,10 +187,13 @@ class WorkCardState extends State<WorkCard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Work type
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(work.type),
             ),
+
+            // Description
             if (description.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -214,6 +222,7 @@ class WorkCardState extends State<WorkCard> {
                   ),
                 ),
               ),
+
             Row(
               children: [
                 if (code != null)
@@ -235,12 +244,14 @@ class WorkCardState extends State<WorkCard> {
                 ),
               ],
             ),
+
             Row(
               children: [
                 const Text("End Date: ", style: bold),
                 Text(work.end),
               ],
             ),
+
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Column(

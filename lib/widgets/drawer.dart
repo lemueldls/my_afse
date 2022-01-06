@@ -1,6 +1,7 @@
+import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 
-import "../extensions/brightness.dart";
+import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/routes.dart";
 import "../utils/student.dart";
@@ -59,7 +60,7 @@ class PageDrawer extends StatelessWidget {
     final selectedTileColor = theme.primaryColor.withAlpha(85);
     final contrast = theme.primaryColorBrightness.text;
 
-    const clamping = ClampingScrollPhysics();
+    const clampingScroll = ClampingScrollPhysics();
 
     return Drawer(
       child: ListTileTheme(
@@ -75,7 +76,7 @@ class PageDrawer extends StatelessWidget {
               Expanded(
                 child: ListView(
                   shrinkWrap: true,
-                  physics: clamping,
+                  physics: clampingScroll,
                   children: [
                     DrawerListTile(
                       route: "/profile",
@@ -93,7 +94,7 @@ class PageDrawer extends StatelessWidget {
               ),
               ListView(
                 shrinkWrap: true,
-                physics: clamping,
+                physics: clampingScroll,
                 children: [
                   if (updater.prompt)
                     Padding(
@@ -142,6 +143,7 @@ class PageDrawer extends StatelessWidget {
               TextButton(
                 onPressed: () async {
                   await api.logout();
+                  await FirebaseAuth.instance.signOut();
 
                   await navigator.pushNamedAndRemoveUntil(
                     "/login",

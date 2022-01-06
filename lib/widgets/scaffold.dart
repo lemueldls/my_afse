@@ -28,10 +28,10 @@ class PageScaffold extends StatelessWidget {
         onWillPop: () async {
           final scaffoldState = _scaffoldKey.currentState!;
 
+          // Use the back button to open and close the drawer.
           if (scaffoldState.isDrawerOpen)
             Navigator.of(context).pop();
           else
-            // Use the back button to open the drawer.
             scaffoldState.openDrawer();
 
           return false;
@@ -41,6 +41,7 @@ class PageScaffold extends StatelessWidget {
     );
   }
 
+  /// Show a snackbar popup when there's a new update.
   Future<void> _checkUpdates(final BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
 
@@ -50,6 +51,7 @@ class PageScaffold extends StatelessWidget {
 
     messenger.showSnackBar(
       SnackBar(
+        duration: const Duration(days: 1),
         content: const Text("A new version is now avaliable"),
         behavior: SnackBarBehavior.floating,
         onVisible: () => updater.dismissed = true,

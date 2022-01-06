@@ -9,9 +9,9 @@ import "package:pull_to_refresh/pull_to_refresh.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:universal_html/parsing.dart";
 
-import "../extensions/brightness.dart";
 import "../extensions/int.dart";
 import "../extensions/list.dart";
+import "../extensions/theming.dart";
 import "../utils/constants.dart";
 import "../utils/shimmer.dart";
 import "../utils/student.dart";

@@ -31,9 +31,13 @@ class AttendanceData {
   factory AttendanceData.parseData(final String html) {
     /// C O L O R S
     const colors = {
+      // Present
       "P": Colors.green,
+      // Excused
       "E": Colors.grey,
+      // Tardy
       "T": Colors.orange,
+      // Absent
       "A": Colors.red,
     };
 
@@ -41,13 +45,18 @@ class AttendanceData {
     final rows =
         parseHtmlDocument(html).querySelectorAll("#submission tr").skip(1);
 
+    /// Data used to count the number of columns.
     final data = rows
         .map((final row) => (row.innerText.trim().split("\n").length - 4) / 2);
 
     /// Counted number of columns.
-    final columns = data.isNotEmpty ? data.reduce(max).toInt() : 0;
+    final columns = data.isNotEmpty
+        ?
+        // Get the longest row
+        data.reduce(max).toInt()
+        : 0;
 
-    /// List of days.
+    /// List of total days.
     final table = rows.map((final row) {
       final tds = row.querySelectorAll("td");
 
@@ -60,6 +69,7 @@ class AttendanceData {
         final title = td.title!;
 
         if (title.isNotEmpty) {
+          /// Split into `[Title, Teacher, Name]`.
           final split = title.split(" - ");
 
           final letter = td.innerText;
@@ -95,6 +105,7 @@ class AttendancePage extends StatefulWidget {
   _AttendancePageState createState() => _AttendancePageState();
 }
 
+/// Represents a list of periods for a date.
 class Day {
   final DateTime date;
   final Iterable<Period?> data;
@@ -127,6 +138,7 @@ class Period {
   String toString() => "{ $title, $teacher, $name }";
 }
 
+/// A square, interactive, cell containing information for a period.
 class PeriodCell extends StatelessWidget {
   final Period? period;
   final DateTime date;
@@ -160,10 +172,13 @@ class PeriodCell extends StatelessWidget {
     );
   }
 
+  /// Open an alert dialog to show information about the period.
   void _openDialog(final BuildContext context) => showDialog(
         context: context,
         builder: (final context) {
           final data = period!;
+
+          const bold = TextStyle(fontWeight: FontWeight.bold);
 
           return AlertDialog(
             title: Text(data.title),
@@ -180,16 +195,18 @@ class PeriodCell extends StatelessWidget {
                 Text(data.name),
                 Row(
                   children: [
-                    const Text(
-                      "Teacher: ",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    const Text("Teacher: ", style: bold),
                     Text(data.teacher),
                   ],
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(DateFormat.yMMMMEEEEd().format(date)),
+                  child: Row(
+                    children: [
+                      const Text("Date: ", style: bold),
+                      Text(DateFormat.MMMMEEEEd().format(date)),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -198,6 +215,7 @@ class PeriodCell extends StatelessWidget {
       );
 }
 
+/// Holds a grid of attendance data.
 class TableBody extends StatefulWidget {
   final ScrollController scrollController;
   final List<Day> table;
@@ -214,6 +232,7 @@ class TableBody extends StatefulWidget {
   _TableBodyState createState() => _TableBodyState();
 }
 
+/// Creates cells in the table body.
 class TableCell extends StatelessWidget {
   final String value;
   final double width;
@@ -236,6 +255,7 @@ class TableCell extends StatelessWidget {
       );
 }
 
+/// A row containing the table headers.
 class TableHead extends StatelessWidget {
   final ScrollController scrollController;
   final int columns;
@@ -286,15 +306,15 @@ class _AttendancePageShimmer extends StatelessWidget {
   Widget build(final BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    const never = NeverScrollableScrollPhysics();
+    final width = size.width ~/ cellSize - 2;
+    final height = size.height ~/ cellSize - 2;
 
-    final width = size.width ~/ cellSize;
-    final height = size.height ~/ cellSize;
+    const neverScroll = NeverScrollableScrollPhysics();
 
     return columns == 0
         ? const ListTile(title: CustomShimmer())
         : ListView.builder(
-            physics: never,
+            physics: neverScroll,
             itemCount: min(rows + 1, height),
             itemBuilder: (final context, final index) => SizedBox(
               height: cellSize,
@@ -309,7 +329,7 @@ class _AttendancePageShimmer extends StatelessWidget {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      physics: never,
+                      physics: neverScroll,
                       itemCount: min(columns, width),
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (final context, final index) =>

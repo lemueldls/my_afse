@@ -23,14 +23,12 @@ Future<Map<String, dynamic>> fetchStudent() async {
   return data;
 }
 
-/// Loads the student data, if any,
-/// and returns if the user is logged in.
-Future<bool> initializeStudent() async {
+Future<void> initializeStudent() async {
   final prefs = await _prefs;
 
   final token = prefs.getString("token");
 
-  if (token == null) return false;
+  if (token == null) return;
 
   // Validate token in the background
   unawaited(api.validate(token));
@@ -42,8 +40,6 @@ Future<bool> initializeStudent() async {
     student = Student.fromJson(data);
   } else
     await fetchStudent();
-
-  return true;
 }
 
 class Student {

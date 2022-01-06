@@ -3,9 +3,10 @@ library my_afse.theme;
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-import "../extensions/color.dart";
+import "../extensions/theming.dart";
 import "settings.dart";
 
+/// Manages changes in theme and automatically updates the app.
 class ThemeChanger extends ChangeNotifier {
   final _prefs = SharedPreferences.getInstance();
 
@@ -26,7 +27,7 @@ class ThemeChanger extends ChangeNotifier {
     final prefs = await _prefs;
 
     await prefs.setInt("color", color.value);
-    await initializeSettings();
+    await updateSettings();
   }
 
   Future<void> setDark(final bool dark) async {
@@ -37,6 +38,6 @@ class ThemeChanger extends ChangeNotifier {
     final prefs = await _prefs;
 
     await prefs.setBool("dark", dark);
-    await initializeSettings();
+    await updateSettings();
   }
 }

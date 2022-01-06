@@ -85,7 +85,7 @@ class NewsCardsState extends State<NewsCards> {
                         left: 16,
                         top: 16,
                         right: 16,
-                        bottom: 8,
+                        bottom: 4,
                       ),
                       child: Column(
                         children: [
@@ -96,10 +96,13 @@ class NewsCardsState extends State<NewsCards> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    // Title
                                     Text(
                                       item.title,
                                       style: textTheme.subtitle1,
                                     ),
+
+                                    // Description
                                     if (description != null)
                                       Linkify(
                                         text: description,
@@ -115,6 +118,8 @@ class NewsCardsState extends State<NewsCards> {
                                   ],
                                 ),
                               ),
+
+                              // Image
                               if (image != null)
                                 Expanded(
                                   flex: 0,
@@ -131,15 +136,20 @@ class NewsCardsState extends State<NewsCards> {
                                 )
                             ],
                           ),
-                          Row(
-                            children: [
-                              Text("Published on ${item.date}"),
-                              const Spacer(),
-                              TextButton(
-                                child: const Text("READ MORE"),
-                                onPressed: () => launchURL(item.url),
-                              ),
-                            ],
+
+                          // ~BUTTON~
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              children: [
+                                Text("Published on ${item.date}"),
+                                const Spacer(),
+                                TextButton(
+                                  child: const Text("READ MORE"),
+                                  onPressed: () => launchURL(item.url),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -279,7 +289,7 @@ class _NewsCardShimmer extends StatelessWidget {
                         ],
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 3),
+                        padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: const [
                             CustomShimmer(width: 200),

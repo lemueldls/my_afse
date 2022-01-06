@@ -170,32 +170,23 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _selectColor(final BuildContext context, final ThemeChanger theme) {
-    var pickerColor = _color;
-
     showDialog(
       context: context,
       builder: (final context) => AlertDialog(
         actionsPadding: const EdgeInsets.only(right: 6),
-        // title: const Text("Pick a color!"),
         content: SingleChildScrollView(
           child: MaterialPicker(
             enableLabel: true,
-            pickerColor: pickerColor,
-            onColorChanged: (final color) => pickerColor = color,
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text("SELECT"),
-            onPressed: () {
+            pickerColor: _color,
+            onColorChanged: (final color) {
               setState(() {
-                theme.setColor(_color = pickerColor);
+                theme.setColor(color);
               });
 
               Navigator.of(context).pop();
             },
           ),
-        ],
+        ),
       ),
     );
   }

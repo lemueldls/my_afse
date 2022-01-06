@@ -78,7 +78,10 @@ class EventCardsState extends State<EventCards> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Time
                             Text(event.time),
+
+                            // Location, if any
                             if (hasLocation)
                               Row(
                                 children: [

@@ -7,7 +7,7 @@ import "package:intl/intl.dart";
 import "package:pull_to_refresh/pull_to_refresh.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
-import "../extensions/brightness.dart";
+import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../widgets/work.dart";
@@ -32,9 +32,11 @@ class GradesNodeTree extends StatelessWidget {
       "Blue": Colors.blue,
     };
 
+    /// Linear bar containing the score.
     final bar = Stack(
       alignment: Alignment.center,
       children: [
+        // Bar
         SizedBox(
           height: 20,
           child: ClipRRect(
@@ -46,6 +48,8 @@ class GradesNodeTree extends StatelessWidget {
             ),
           ),
         ),
+
+        // Label
         Align(
           child: Text(
             score.scoreLabel,
@@ -69,51 +73,72 @@ class GradesNodeTree extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               child: Column(
                 children: [
+                  // Top row
                   Row(
                     children: [
-                      Expanded(flex: 2, child: Text(score.label)),
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: Text(score.label),
+                        ),
+                      ),
                       Expanded(child: bar)
                     ],
                   ),
+
+                  // Bottom row
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Row(
                       children: [
                         Expanded(
-                          flex: 5,
-                          child: Text(
-                            "Updated ${score.recent}",
-                            style: textTheme.bodyText2!
-                                .copyWith(color: textTheme.caption!.color),
+                          child: Row(
+                            children: [
+                              // Date updated
+                              Text(
+                                "Updated ${score.recent}",
+                                style: textTheme.bodyText2!
+                                    .copyWith(color: textTheme.caption!.color),
+                              ),
+
+                              // Missing assignments
+                              if (missing != 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        constraints: const BoxConstraints(
+                                          minWidth: 20,
+                                          minHeight: 20,
+                                        ),
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 3,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.shade400,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          "$missing",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                        if (missing != 0)
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 20,
-                                  height: 20,
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 3,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.shade400,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    "$missing",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
+
+                        // Weight sum
                         Text("=${sum.toStringAsFixed(0)} weight"),
                       ],
                     ),
@@ -123,6 +148,7 @@ class GradesNodeTree extends StatelessWidget {
             ),
             collapsed: const SizedBox.shrink(),
             expanded: Container(
+              // Thin grey line to the left
               decoration: const BoxDecoration(
                 border: Border(left: BorderSide(color: Colors.grey)),
               ),
@@ -131,6 +157,7 @@ class GradesNodeTree extends StatelessWidget {
                 physics: const ClampingScrollPhysics(),
                 itemCount: children.length,
                 itemBuilder: (final context, final index) =>
+                    // ~Recursion~
                     GradesNodeTree(score: children[index]),
               ),
             ),
@@ -236,20 +263,54 @@ class GradesPage extends StatefulWidget {
   _GradesPageState createState() => _GradesPageState();
 }
 
+/// Scores are seperated by two main categories.
+/// We can have "sections" that contain [children], that
+/// can have more "sections", or an assignment.
+/// An assignment are a peice of work that build "sections".
+///
+/// These "sections" are essentially folders, that can contain either
+/// more folders, or a file (an assignment in this context) instead.
 class MasteryScore {
+  /// If it contains children.
   final bool expanded;
+
+  /// Name of score.
   final String label;
+
+  /// Score number in string form.
   final String scoreLabel;
+
+  /// Color associated with score.
   final String color;
+
+  /// Percentage of score.
   final double percent;
+
+  /// Total weight sum.
   final double sum;
+
+  /// Numer of missing assignments, if any.
   final int? missing;
+
+  /// Additional scores nested inside.
   final List<MasteryScore>? children;
+
+  /// Title for assignment.
   final String? title;
+
+  /// Comment by teacher for the assignment.
   final String? comment;
+
+  /// Date for last updated.
   final String? recent;
+
+  /// Weight number in string form.
   final String? weight;
+
+  /// Due date for the assignment.
   final String? end;
+
+  /// Last modified date for the assignment.
   final String modified;
 
   const MasteryScore({
@@ -298,12 +359,12 @@ class MasteryScore {
       title: json["assessment_title"],
       comment: json["comment"],
       recent: recent != null
-          ? DateFormat.yMMMEd().format(format.parse(recent))
+          ? DateFormat.MMMEd().format(format.parse(recent))
           : null,
       weight: weight?.toStringAsFixed(1),
       end:
           end != null ? DateFormat.MMMMEEEEd().format(format.parse(end)) : null,
-      modified: DateFormat.yMMMMEEEEd().add_jm().format(
+      modified: DateFormat.MMMMEEEEd().add_jm().format(
             DateFormat("yyyy-MM-ddTHH:mm:ss").parseUtc(
               json["time_modified"],
             ),
@@ -348,9 +409,6 @@ class _GradesPageShimmer extends StatelessWidget {
                                 child: Column(
                                   children: const [
                                     CustomShimmer(),
-                                    // CustomShimmer(
-                                    //   padding: EdgeInsets.only(top: 4)
-                                    // ),
                                     CustomShimmer(
                                       padding: EdgeInsets.only(
                                         top: 4,
@@ -442,6 +500,7 @@ class _GradesPageState extends State<GradesPage> {
                         final scores = scoreData
                             .map((final score) => MasteryScore.fromJson(score))
                             .toList(growable: false);
+
                         return scoreData.isEmpty
                             ? const ListTile(
                                 title: Text("There are no grades to show."),

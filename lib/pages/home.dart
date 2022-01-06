@@ -48,6 +48,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Greeting message
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Row(
@@ -65,12 +66,15 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
+
                 const Divider(),
+
                 Padding(
                   padding: const EdgeInsets.all(4),
                   child: Text("Events", style: textTheme.headline6),
                 ),
                 EventCards(key: _eventsKey),
+
                 Padding(
                   padding: const EdgeInsets.all(4),
                   child: Text("News", style: textTheme.headline6),
