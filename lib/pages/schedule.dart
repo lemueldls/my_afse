@@ -20,8 +20,8 @@ import "../widgets/error.dart";
 class Period {
   final int index;
   final String name;
-  final String start;
-  final String end;
+  final String? start;
+  final String? end;
   final List<String>? teachers;
   final String? room;
 
@@ -83,11 +83,12 @@ class ScheduleData {
 
         /// Time associated with this period cell.
         /// If none matches, it will use last period's time.
-        final timeRow = times.tryGet(row) ?? times.last;
+        /// If [times] is empty, it will be null.
+        final timeRow = times.tryGet(row) ?? times.tryGet(times.length - 1);
 
         /// Time of period parsed into a more readable format.
         /// Example: `["1:40 PM", "2:20 PM"]`
-        final time = timeRow.split("-").map((final time) {
+        final time = timeRow?.split("-").map((final time) {
           final start = int.parse(time.split(":")[0]);
 
           return "${time.trim()} ${start > 5 && start != 12 ? "A" : "P"}M";
@@ -107,8 +108,8 @@ class ScheduleData {
           Period(
             index: row,
             name: name,
-            start: time[0],
-            end: time[1],
+            start: time?[0],
+            end: time?[1],
             teachers: teachers == "None" ? null : teachers.split(", "),
             room: room?.split("Room ")[1] ?? room,
           ),
@@ -144,16 +145,16 @@ class _PeriodListViewState extends State<PeriodListView> {
     final selectedColor = theme.primaryColorBrightness.text;
     final selectedTileColor = theme.primaryColor;
 
-    if (today) {
+    if (today && day.first.start != null && day.first.end != null) {
       /// Update the currently selected period.
       void update() {
         final now = DateTime.now();
 
-        _selectedIndex = now.isBefore(_timeToDate(day.first.start))
+        _selectedIndex = now.isBefore(_timeToDate(day.first.start!))
             ? 0
             : day.indexWhere((final period) {
-                final start = _timeToDate(period.start);
-                final end = _timeToDate(period.end);
+                final start = _timeToDate(period.start!);
+                final end = _timeToDate(period.end!);
 
                 if (now.isAfter(start) && now.isBefore(end)) {
                   _timer = Timer(end.difference(now), () => setState(update));
@@ -249,20 +250,21 @@ class _PeriodListViewState extends State<PeriodListView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("${period.index.ordinal} Period"),
-            Row(
-              children: [
-                const Text("From "),
-                Text(
-                  period.start,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const Text(" to "),
-                Text(
-                  period.end,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+            if (period.start != null && period.end != null)
+              Row(
+                children: [
+                  const Text("From "),
+                  Text(
+                    period.start!,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Text(" to "),
+                  Text(
+                    period.end!,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             if (hasRoom || hasTeachers)
               const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
             if (hasRoom)
@@ -347,7 +349,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   final _prefs = SharedPreferences.getInstance();
 
-  int _periods = 8;
+  int _periods = 7;
 
   late Future<ScheduleData> _futureSchedule = _fetchSchedule();
 
