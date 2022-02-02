@@ -200,7 +200,7 @@ class _PeriodListViewState extends State<PeriodListView> {
             title: Row(
               children: [
                 // Show time for bigger screens.
-                if (width >= 750)
+                if (width >= 750 && period.start != null && period.end != null)
                   SizedBox(
                     width: 200,
                     child: Text(
