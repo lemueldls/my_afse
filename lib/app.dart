@@ -36,7 +36,7 @@ class App extends StatelessWidget {
     );
 
     /// Helpful for starting up a specific page in debug mode.
-    const debugPage = production ? null : "/home";
+    const debugPage = production ? null : "/attendance";
 
     final theme = Provider.of<ThemeChanger>(context);
 
@@ -58,13 +58,12 @@ class App extends StatelessWidget {
           foregroundColor: contrast.text,
         ),
         textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(primary: themeData.primaryContrast),
+          style: TextButton.styleFrom(primary: themeData.primaryTextContrast),
         ),
         snackBarTheme: SnackBarThemeData(
           actionTextColor:
               // If the theme is light on dark
-              brightness == Brightness.dark &&
-                      themeData.primaryColorBrightness == Brightness.light
+              themeData.isPrimaryContrastingOnBrightness
                   // Use a shade of grey
                   ? Colors.grey.shade500
                   // Fallback to the primary color
@@ -104,5 +103,7 @@ class App extends StatelessWidget {
 
     // If the state is interactive, then return the color.
     if (states.any(interactiveStates.contains)) return color;
+
+    return null;
   }
 }

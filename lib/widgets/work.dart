@@ -32,7 +32,7 @@ class WorkCardState extends State<WorkCard> {
 
   int _count = 0;
 
-  late Future<List<dynamic>> futureWork = api.get("${key}_work");
+  late Future<List<Map<String, dynamic>>> futureWork = api.get("${key}_work");
 
   @override
   Widget build(final BuildContext context) {
@@ -55,7 +55,7 @@ class WorkCardState extends State<WorkCard> {
               ),
               child: Text("${widget.type} Work", style: title),
             ),
-            FutureBuilder<List<dynamic>>(
+            FutureBuilder<List<Map<String, dynamic>>>(
               future: futureWork,
               builder: (final context, final snapshot) {
                 if (snapshot.hasError)
@@ -70,7 +70,7 @@ class WorkCardState extends State<WorkCard> {
                 }
 
                 final count = snapshot.data!.reversed
-                    .map((final count) => WorkData.fromJson(count))
+                    .map(WorkData.fromJson)
                     .toList(growable: false);
 
                 _saveWork(count.length);
@@ -174,7 +174,8 @@ class WorkCardState extends State<WorkCard> {
 
     const bold = TextStyle(fontWeight: FontWeight.bold);
 
-    final link = textTheme.bodyText2!.copyWith(color: theme.primaryContrast);
+    final link =
+        textTheme.bodyText2!.copyWith(color: theme.primaryTextContrast);
 
     final description = work.description;
     final code = work.code;

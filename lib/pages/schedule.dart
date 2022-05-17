@@ -46,7 +46,7 @@ class PeriodListView extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _PeriodListViewState createState() => _PeriodListViewState();
+  PeriodListViewState createState() => PeriodListViewState();
 }
 
 /// Parses the schedule sheet as a HTML document
@@ -127,10 +127,10 @@ class SchedulePage extends StatefulWidget {
   const SchedulePage({final Key? key}) : super(key: key);
 
   @override
-  _SchedulePageState createState() => _SchedulePageState();
+  SchedulePageState createState() => SchedulePageState();
 }
 
-class _PeriodListViewState extends State<PeriodListView> {
+class PeriodListViewState extends State<PeriodListView> {
   int? _selectedIndex;
 
   /// Timer used to wait for the next period to highlight.
@@ -142,7 +142,7 @@ class _PeriodListViewState extends State<PeriodListView> {
     final today = widget.today;
 
     final theme = Theme.of(context);
-    final selectedColor = theme.primaryColorBrightness.text;
+    final selectedColor = theme.textContrastOnPrimary;
     final selectedTileColor = theme.primaryColor;
 
     if (today && day.first.start != null && day.first.end != null) {
@@ -274,14 +274,14 @@ class _PeriodListViewState extends State<PeriodListView> {
                     "Room: ",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text(room!),
+                  Text(room),
                 ],
               ),
             if (hasTeachers)
               Wrap(
                 children: [
                   Text(
-                    "Teacher${teachers!.length > 1 ? "s" : ""}: ",
+                    "Teacher${teachers.length > 1 ? "s" : ""}: ",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(teachers.join(", ")),
@@ -343,7 +343,7 @@ class _SchedulePageShimmer extends StatelessWidget {
       );
 }
 
-class _SchedulePageState extends State<SchedulePage> {
+class SchedulePageState extends State<SchedulePage> {
   final _refreshController = RefreshController();
   final _controller = CarouselController();
 
@@ -405,8 +405,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     initialPage: _currentDay,
                   ),
                   itemCount: schedule.length,
-                  itemBuilder:
-                      (final context, final weekday, final _realIndex) {
+                  itemBuilder: (final context, final weekday, final realIndex) {
                     final today = weekday == now.weekday - 1;
 
                     const curve = Curves.ease;
@@ -441,7 +440,7 @@ class _SchedulePageState extends State<SchedulePage> {
                         ),
                         const Divider(height: 1),
                         OrientationBuilder(
-                          builder: (final context, final _orientation) =>
+                          builder: (final context, final orientation) =>
                               PeriodListView(
                             day: schedule[weekday],
                             today: today,
