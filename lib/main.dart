@@ -29,10 +29,10 @@ class AppBuilder extends StatefulWidget {
   const AppBuilder({final Key? key}) : super(key: key);
 
   @override
-  _AppBuilderState createState() => _AppBuilderState();
+  AppBuilderState createState() => AppBuilderState();
 }
 
-class _AppBuilderState extends State<AppBuilder> {
+class AppBuilderState extends State<AppBuilder> {
   String _page = settings.page;
 
   final shortcuts = FlutterShortcuts();

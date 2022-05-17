@@ -91,7 +91,7 @@ class EventCardsState extends State<EventCards> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Text(location!)
+                                  Text(location)
                                 ],
                               )
                           ],

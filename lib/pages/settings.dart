@@ -13,10 +13,10 @@ class SettingsPage extends StatefulWidget {
   const SettingsPage({final Key? key}) : super(key: key);
 
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  SettingsPageState createState() => SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class SettingsPageState extends State<SettingsPage> {
   final _prefs = SharedPreferences.getInstance();
 
   String _page = settings.page;

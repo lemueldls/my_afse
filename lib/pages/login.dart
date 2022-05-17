@@ -13,10 +13,10 @@ class LoginPage extends StatefulWidget {
   const LoginPage({final Key? key}) : super(key: key);
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   final _auth = FirebaseAuth.instance;
   final _formKey = LabeledGlobalKey<FormState>("Form");
 
@@ -37,7 +37,10 @@ class _LoginPageState extends State<LoginPage> {
   String _error = "";
   bool _loading = false;
 
-  Future<void> authencate(final String username, final String password) async {
+  Future<void> authenticate(
+    final String username,
+    final String password,
+  ) async {
     final navigator = Navigator.of(context);
 
     final student = await fetchStudent();
@@ -245,7 +248,7 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString("username", username);
       await prefs.setString("auth", _password);
 
-      await authencate(username, _password);
+      await authenticate(username, _password);
     } else
       setState(() => _error = login.message!);
 
@@ -272,10 +275,14 @@ class _LoginPageState extends State<LoginPage> {
             !(email.startsWith("student_afse_") &&
                 email.endsWith("@students.jumpro.pe")))
       return "This is not a valid AFSE email";
+
+    return null;
   }
 
   /// Validate the password.
   String? _validatePassword(final String? value) {
     if (value == null || value.isEmpty) return "Please enter your password";
+
+    return null;
   }
 }

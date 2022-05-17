@@ -30,7 +30,7 @@ Future<void> updateSettings() async {
     // Default to device dark mode.
     await prefs.setBool(
       "dark",
-      dark = SchedulerBinding.instance!.window.platformBrightness ==
+      dark = SchedulerBinding.instance.window.platformBrightness ==
           Brightness.dark,
     );
 

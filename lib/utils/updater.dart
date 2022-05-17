@@ -19,6 +19,8 @@ Future<String?> checkLatest() async {
 
   // Version match the app's current version with the latest version online.
   if (Version.parse(latest) > Version.parse(current.version)) prompt = true;
+
+  return null;
 }
 
 void update() {

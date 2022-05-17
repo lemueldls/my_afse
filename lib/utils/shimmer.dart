@@ -21,10 +21,10 @@ class CustomShimmer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _CustomShimmerState createState() => _CustomShimmerState();
+  CustomShimmerState createState() => CustomShimmerState();
 }
 
-class _CustomShimmerState extends State<CustomShimmer> {
+class CustomShimmerState extends State<CustomShimmer> {
   @override
   Widget build(final BuildContext context) {
     final dark = settings.dark;

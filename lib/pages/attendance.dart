@@ -39,6 +39,8 @@ class AttendanceData {
       "T": Colors.orange,
       // Absent
       "A": Colors.red,
+      // Missing
+      "M": Colors.red,
     };
 
     /// Parsed HTML into table rows
@@ -102,7 +104,7 @@ class AttendancePage extends StatefulWidget {
   const AttendancePage({final Key? key}) : super(key: key);
 
   @override
-  _AttendancePageState createState() => _AttendancePageState();
+  AttendancePageState createState() => AttendancePageState();
 }
 
 /// Represents a list of periods for a date.
@@ -229,7 +231,7 @@ class TableBody extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _TableBodyState createState() => _TableBodyState();
+  TableBodyState createState() => TableBodyState();
 }
 
 /// Creates cells in the table body.
@@ -346,7 +348,7 @@ class _AttendancePageShimmer extends StatelessWidget {
   }
 }
 
-class _AttendancePageState extends State<AttendancePage> {
+class AttendancePageState extends State<AttendancePage> {
   final _refreshController = RefreshController();
 
   final _controllers = LinkedScrollControllerGroup();
@@ -455,7 +457,7 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 }
 
-class _TableBodyState extends State<TableBody> {
+class TableBodyState extends State<TableBody> {
   final _controllers = LinkedScrollControllerGroup();
   late final ScrollController _firstColumnController = _controllers.addAndGet();
   late final ScrollController _restColumnsController = _controllers.addAndGet();

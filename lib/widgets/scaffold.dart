@@ -17,16 +17,16 @@ class PageScaffold extends StatelessWidget {
   Widget build(final BuildContext context) {
     _checkUpdates(context);
 
-    final _scaffoldKey = LabeledGlobalKey<ScaffoldState>("Scaffold");
+    final scaffoldKey = LabeledGlobalKey<ScaffoldState>("Scaffold");
 
     return Scaffold(
-      key: _scaffoldKey,
+      key: scaffoldKey,
       appBar: AppBar(title: Text(title)),
       drawer: const PageDrawer(),
       drawerEdgeDragWidth: 40,
       body: WillPopScope(
         onWillPop: () async {
-          final scaffoldState = _scaffoldKey.currentState!;
+          final scaffoldState = scaffoldKey.currentState!;
 
           // Use the back button to open and close the drawer.
           if (scaffoldState.isDrawerOpen)
@@ -51,8 +51,7 @@ class PageScaffold extends StatelessWidget {
 
     messenger.showSnackBar(
       SnackBar(
-        duration: const Duration(days: 1),
-        content: const Text("A new version is now avaliable"),
+        content: const Text("A new version is now available"),
         behavior: SnackBarBehavior.floating,
         onVisible: () => updater.dismissed = true,
         action: const SnackBarAction(
