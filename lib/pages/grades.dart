@@ -260,7 +260,7 @@ class GradesPage extends StatefulWidget {
   const GradesPage({final Key? key}) : super(key: key);
 
   @override
-  _GradesPageState createState() => _GradesPageState();
+  GradesPageState createState() => GradesPageState();
 }
 
 /// Scores are seperated by two main categories.
@@ -354,7 +354,10 @@ class MasteryScore {
       sum: json["weight_sum"],
       missing: threshold["missing_count"],
       children: children
-          ?.map((final score) => MasteryScore.fromJson(score))
+          ?.map(
+            (final score) =>
+                MasteryScore.fromJson(score as Map<String, dynamic>),
+          )
           .toList(growable: false),
       title: json["assessment_title"],
       comment: json["comment"],
@@ -447,14 +450,15 @@ class _GradesPageShimmer extends StatelessWidget {
       );
 }
 
-class _GradesPageState extends State<GradesPage> {
+class GradesPageState extends State<GradesPage> {
   final _refreshController = RefreshController();
 
   final _prefs = SharedPreferences.getInstance();
 
   int _scores = 7;
 
-  late Future<List<dynamic>> _futureMastery = api.get("student_mastery_cache");
+  late Future<List<Map<String, dynamic>>> _futureMastery =
+      api.get("student_mastery_cache");
 
   final _upcomingKey = LabeledGlobalKey<WorkCardState>("Upcoming");
   final _missingKey = LabeledGlobalKey<WorkCardState>("Missing");
@@ -478,7 +482,7 @@ class _GradesPageState extends State<GradesPage> {
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: FutureBuilder<List<dynamic>>(
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
                       future: _futureMastery,
                       builder: (final context, final snapshot) {
                         if (snapshot.hasError)
@@ -491,14 +495,18 @@ class _GradesPageState extends State<GradesPage> {
                         if (snapshot.connectionState == ConnectionState.waiting)
                           return _GradesPageShimmer(scores: _scores);
 
-                        final Map<String, dynamic> data = snapshot.data![0];
+                        final data = snapshot.data![0];
                         final List<dynamic> scoreData =
                             jsonDecode(data["score_data"]);
 
                         _saveScores(scoreData.length);
 
                         final scores = scoreData
-                            .map((final score) => MasteryScore.fromJson(score))
+                            .map(
+                              (final score) => MasteryScore.fromJson(
+                                score as Map<String, dynamic>,
+                              ),
+                            )
                             .toList(growable: false);
 
                         return scoreData.isEmpty

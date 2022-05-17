@@ -56,7 +56,7 @@ class Student {
   final String status;
   final String email;
   // final List<String> sections;
-  // final Map annotations;
+  // final Map<String, dynamic> annotations;
 
   const Student({
     required final this.modified,

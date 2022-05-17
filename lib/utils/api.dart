@@ -15,7 +15,7 @@ final _prefs = SharedPreferences.getInstance();
 Future<bool>? _validated;
 
 /// Fetch from the JumpRope API.
-Future<List<API>> get<API>(final String api) async {
+Future<List<Map<String, API>>> get<API>(final String api) async {
   final prefs = await _prefs;
 
   final token = prefs.getString("token");
@@ -35,8 +35,11 @@ Future<List<API>> get<API>(final String api) async {
   if (response.statusCode == 200) {
     final Map<String, dynamic> data =
         jsonDecode(utf8.decode(response.bodyBytes));
+    final List<dynamic> results = data["results"];
 
-    return data["results"];
+    return results
+        .map<Map<String, API>>((final result) => result)
+        .toList(growable: false);
   } else {
     _validated = null;
     await validate(token!);
