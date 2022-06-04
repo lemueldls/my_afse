@@ -36,7 +36,7 @@ class App extends StatelessWidget {
     );
 
     /// Helpful for starting up a specific page in debug mode.
-    const debugPage = production ? null : "/attendance";
+    const debugPage = production ? null : "/home";
 
     final theme = Provider.of<ThemeChanger>(context);
 

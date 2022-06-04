@@ -4,53 +4,91 @@ import "dart:async";
 import "dart:convert";
 import "dart:io";
 
+import "package:hive_flutter/hive_flutter.dart";
 import "package:http/http.dart" as http;
 import "package:shared_preferences/shared_preferences.dart";
 import "package:universal_html/parsing.dart";
 
-import "./constants.dart";
+/// JumpRope, one day, decided to only allow browser requests for their API.
+/// Setting a custom user agent fakes creating a request from a browser.
+const userAgentHeader = {
+  HttpHeaders.userAgentHeader: "Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101",
+};
+
+final cacheBox = Hive.openLazyBox<String>("cache");
 
 final _prefs = SharedPreferences.getInstance();
 
 Future<bool>? _validated;
 
 /// Fetch from the JumpRope API.
-Future<List<Map<String, API>>> get<API>(final String api) async {
+Stream<List<Map<String, API>>> getApi<API>(final String api) async* {
   final prefs = await _prefs;
 
   final token = prefs.getString("token");
-  if (token != null) await validate(token);
+  await validate(token!);
 
   final username = prefs.getString("username");
 
-  final response = await http.get(
-    Uri.parse("https://api.jumpro.pe/api/v3/$api/"),
+  final stream = getCached(
+    "https://api.jumpro.pe/api/v3/$api/",
     headers: {
-      ...userAgentHeader,
       HttpHeaders.contentTypeHeader: "application/json",
       HttpHeaders.authorizationHeader: "ApiKey $username:$token",
     },
   );
 
-  if (response.statusCode == 200) {
-    final Map<String, dynamic> data =
-        jsonDecode(utf8.decode(response.bodyBytes));
-    final List<dynamic> results = data["results"];
+  await for (final response in stream)
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      final List<dynamic> results = data["results"];
 
-    return results
-        .map<Map<String, API>>((final result) => result)
-        .toList(growable: false);
-  } else {
-    _validated = null;
-    await validate(token!);
+      yield results
+          .map<Map<String, API>>((final result) => result)
+          .toList(growable: false);
+    } else {
+      _validated = null;
+      await validate(token);
 
-    return get(api);
+      await for (final data in getApi<API>(api)) yield data;
+    }
+}
+
+Stream<http.Response> getCached(
+  final String url, {
+  final Map<String, String>? headers,
+}) async* {
+  final cache = await cacheBox;
+
+  final cached = await cache.get(url);
+  final hasCached = cached != null;
+
+  if (hasCached) yield http.Response(cached, 200);
+
+  try {
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        ...userAgentHeader,
+        if (headers != null) ...headers,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final body = response.body;
+
+      await cache.put(url, body);
+
+      yield response;
+    }
+  } on Exception {
+    if (!hasCached) rethrow;
   }
 }
 
 Future<LoginResponse> login(
   final String username,
-  final String password,
+  final String auth,
 ) async {
   final prefs = await _prefs;
 
@@ -61,7 +99,7 @@ Future<LoginResponse> login(
     };
     final request =
         http.Request("POST", Uri.parse("https://services.jumpro.pe/login/"))
-          ..bodyFields = {"username": username, "password": password}
+          ..bodyFields = {"username": username, "password": auth}
           ..followRedirects = false
           ..headers.addAll(headers);
 
@@ -127,7 +165,8 @@ Future<ValidateResponse> validate(final String token) async {
 
     return response;
   } else {
-    final user = await login(username!, prefs.getString("auth")!);
+    final auth = prefs.getString("auth");
+    final user = await login(username!, auth!);
 
     // Recursive validation with a new, working, token.
     final validated = validate(user.token!);

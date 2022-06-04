@@ -3,7 +3,6 @@ import "dart:math";
 
 import "package:carousel_slider/carousel_slider.dart";
 import "package:flutter/material.dart";
-import "package:http/http.dart" as http;
 import "package:intl/intl.dart";
 import "package:pull_to_refresh/pull_to_refresh.dart";
 import "package:shared_preferences/shared_preferences.dart";
@@ -12,7 +11,7 @@ import "package:universal_html/parsing.dart";
 import "../extensions/int.dart";
 import "../extensions/list.dart";
 import "../extensions/theming.dart";
-import "../utils/constants.dart";
+import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
 import "../widgets/error.dart";
@@ -47,87 +46,6 @@ class PeriodListView extends StatefulWidget {
 
   @override
   PeriodListViewState createState() => PeriodListViewState();
-}
-
-/// Parses the schedule sheet as a HTML document
-/// because I can't get any direct data from the API.
-class ScheduleData {
-  final List<String> times;
-  final List<List<Period>> schedule;
-
-  const ScheduleData({
-    required final this.times,
-    required final this.schedule,
-  });
-
-  factory ScheduleData.parseData(final String html) {
-    final table = parseHtmlDocument(html).querySelector("table");
-
-    /// A list of times for every period.
-    final times = table!
-        .getElementsByClassName("period-time-label")
-        .map((final time) => time.text!)
-        .toList(growable: false);
-
-    /// A list of days.
-    final schedule = <List<Period>>[];
-
-    for (var i = 2; i < DateTime.daysPerWeek; i++) {
-      final day = <Period>[];
-
-      table
-          .querySelectorAll("tr td:nth-child($i)")
-          .asMap()
-          .forEach((final row, final cell) {
-        if (cell.className != "cell-with-data") return;
-
-        /// Time associated with this period cell.
-        /// If none matches, it will use last period's time.
-        /// If [times] is empty, it will be null.
-        final timeRow = times.tryGet(row) ?? times.tryGet(times.length - 1);
-
-        /// Time of period parsed into a more readable format.
-        /// Example: `["1:40 PM", "2:20 PM"]`
-        final time = timeRow?.split("-").map((final time) {
-          final start = int.parse(time.split(":")[0]);
-
-          return "${time.trim()} ${start > 5 && start != 12 ? "A" : "P"}M";
-        }).toList(growable: false);
-
-        final data = cell.text!
-            .split("\n")
-            .map((final text) => text.trim())
-            .where((final text) => text.isNotEmpty)
-            .toList(growable: false);
-
-        final name = data[0];
-        final teachers = data[1];
-        final room = data.tryGet(2);
-
-        day.add(
-          Period(
-            index: row,
-            name: name,
-            start: time?[0],
-            end: time?[1],
-            teachers: teachers == "None" ? null : teachers.split(", "),
-            room: room?.split("Room ")[1] ?? room,
-          ),
-        );
-      });
-
-      schedule.add(day);
-    }
-
-    return ScheduleData(times: times, schedule: schedule);
-  }
-}
-
-class SchedulePage extends StatefulWidget {
-  const SchedulePage({final Key? key}) : super(key: key);
-
-  @override
-  SchedulePageState createState() => SchedulePageState();
 }
 
 class PeriodListViewState extends State<PeriodListView> {
@@ -308,39 +226,85 @@ class PeriodListViewState extends State<PeriodListView> {
   }
 }
 
-class _SchedulePageShimmer extends StatelessWidget {
-  final int periods;
+/// Parses the schedule sheet as a HTML document
+/// because I can't get any direct data from the API.
+class ScheduleData {
+  final List<String> times;
+  final List<List<Period>> schedule;
 
-  const _SchedulePageShimmer({
-    required final this.periods,
-    final Key? key,
-  }) : super(key: key);
+  const ScheduleData({
+    required final this.times,
+    required final this.schedule,
+  });
+
+  factory ScheduleData.parseData(final String html) {
+    final table = parseHtmlDocument(html).querySelector("table");
+
+    /// A list of times for every period.
+    final times = table!
+        .getElementsByClassName("period-time-label")
+        .map((final time) => time.text!)
+        .toList(growable: false);
+
+    /// A list of days.
+    final schedule = <List<Period>>[];
+
+    for (var i = 2; i < DateTime.daysPerWeek; i++) {
+      final day = <Period>[];
+
+      table
+          .querySelectorAll("tr td:nth-child($i)")
+          .asMap()
+          .forEach((final row, final cell) {
+        if (cell.className != "cell-with-data") return;
+
+        /// Time associated with this period cell.
+        /// If none matches, it will use last period's time.
+        /// If [times] is empty, it will be null.
+        final timeRow = times.tryGet(row) ?? times.tryGet(times.length - 1);
+
+        /// Time of period parsed into a more readable format.
+        /// Example: `["1:40 PM", "2:20 PM"]`
+        final time = timeRow?.split("-").map((final time) {
+          final start = int.parse(time.split(":")[0]);
+
+          return "${time.trim()} ${start > 5 && start != 12 ? "A" : "P"}M";
+        }).toList(growable: false);
+
+        final data = cell.text!
+            .split("\n")
+            .map((final text) => text.trim())
+            .where((final text) => text.isNotEmpty)
+            .toList(growable: false);
+
+        final name = data[0];
+        final teachers = data[1];
+        final room = data.tryGet(2);
+
+        day.add(
+          Period(
+            index: row,
+            name: name,
+            start: time?[0],
+            end: time?[1],
+            teachers: teachers == "None" ? null : teachers.split(", "),
+            room: room?.split("Room ")[1] ?? room,
+          ),
+        );
+      });
+
+      schedule.add(day);
+    }
+
+    return ScheduleData(times: times, schedule: schedule);
+  }
+}
+
+class SchedulePage extends StatefulWidget {
+  const SchedulePage({final Key? key}) : super(key: key);
 
   @override
-  Widget build(final BuildContext context) => Column(
-        children: [
-          const CustomShimmer(padding: EdgeInsets.all(28)),
-          const Divider(height: 1),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            separatorBuilder: (final context, final index) => const Divider(
-              height: 1,
-              indent: 16,
-              endIndent: 16,
-            ),
-            itemCount: periods,
-            itemBuilder: (final context, final index) => const ListTile(
-              leading: CustomShimmer(
-                width: 16,
-                padding: EdgeInsets.only(top: 3.5),
-              ),
-              title: CustomShimmer(),
-              trailing: SizedBox.shrink(),
-            ),
-          )
-        ],
-      );
+  SchedulePageState createState() => SchedulePageState();
 }
 
 class SchedulePageState extends State<SchedulePage> {
@@ -351,9 +315,10 @@ class SchedulePageState extends State<SchedulePage> {
 
   int _periods = 7;
 
-  late Future<ScheduleData> _futureSchedule = _fetchSchedule();
+  // ignore: prefer_final_fields
+  late Stream<ScheduleData> _scheduleStream = _broadcastSchedule();
 
-  /// Timer used to switch to the currect day.
+  /// Timer used to switch to the current day.
   Timer? _timer;
   int _currentDay = min((DateTime.now().weekday - 1) % 6, DateTime.friday - 1);
 
@@ -366,13 +331,13 @@ class SchedulePageState extends State<SchedulePage> {
     return SmartRefresher(
       physics: const BouncingScrollPhysics(),
       controller: _refreshController,
-      onRefresh: _refresh,
+      onRefresh: () => setState(() => _scheduleStream = _broadcastSchedule()),
       child: SingleChildScrollView(
         child: Align(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 750),
-            child: FutureBuilder<ScheduleData>(
-              future: _futureSchedule,
+            child: StreamBuilder<ScheduleData>(
+              stream: _scheduleStream,
               builder: (final context, final snapshot) {
                 if (snapshot.hasError)
                   return ErrorCard(error: "${snapshot.error}");
@@ -384,11 +349,11 @@ class SchedulePageState extends State<SchedulePage> {
                 _savePeriods(schedule);
 
                 final now = DateTime.now();
-                final tommorrow =
+                final tomorrow =
                     DateTime(now.year, now.month, now.day + 1).difference(now);
 
                 _timer = Timer(
-                  tommorrow,
+                  tomorrow,
                   () => setState(() => ++_currentDay),
                 );
 
@@ -472,16 +437,20 @@ class SchedulePageState extends State<SchedulePage> {
     _loadPeriods();
   }
 
-  Future<ScheduleData> _fetchSchedule() async {
+  Stream<ScheduleData> _broadcastSchedule() =>
+      _fetchSchedule().asBroadcastStream()
+        ..first
+            .then((final data) => _refreshController.refreshCompleted())
+            .catchError((final error) => _refreshController.refreshFailed());
+
+  Stream<ScheduleData> _fetchSchedule() async* {
     try {
-      final response = await http.get(
-        Uri.parse(
-          "https://api.jumpro.pe/schedule/student_schedule/?as=html&student_id=${student.id}",
-        ),
-        headers: userAgentHeader,
+      final stream = api.getCached(
+        "https://api.jumpro.pe/schedule/student_schedule/?as=html&student_id=${student.id}",
       );
 
-      return ScheduleData.parseData(response.body);
+      await for (final response in stream)
+        yield ScheduleData.parseData(response.body);
     } on Exception {
       throw Exception("Failed to load schedule");
     }
@@ -497,14 +466,6 @@ class SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  void _refresh() => setState(() {
-        _futureSchedule = _fetchSchedule();
-
-        _futureSchedule
-            .then((final data) => _refreshController.refreshCompleted())
-            .catchError((final error) => _refreshController.refreshFailed());
-      });
-
   Future<void> _savePeriods(final List<List<Period>> schedule) async {
     final prefs = await _prefs;
 
@@ -517,4 +478,39 @@ class SchedulePageState extends State<SchedulePage> {
 
     _periods = schedule[_currentDay].length;
   }
+}
+
+class _SchedulePageShimmer extends StatelessWidget {
+  final int periods;
+
+  const _SchedulePageShimmer({
+    required final this.periods,
+    final Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(final BuildContext context) => Column(
+        children: [
+          const CustomShimmer(padding: EdgeInsets.all(28)),
+          const Divider(height: 1),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            separatorBuilder: (final context, final index) => const Divider(
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+            ),
+            itemCount: periods,
+            itemBuilder: (final context, final index) => const ListTile(
+              leading: CustomShimmer(
+                width: 16,
+                padding: EdgeInsets.only(top: 3.5),
+              ),
+              title: CustomShimmer(),
+              trailing: SizedBox.shrink(),
+            ),
+          )
+        ],
+      );
 }

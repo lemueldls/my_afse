@@ -18,7 +18,6 @@ class SettingsPage extends StatefulWidget {
 
 class SettingsPageState extends State<SettingsPage> {
   final _prefs = SharedPreferences.getInstance();
-
   String _page = settings.page;
 
   late bool _dark;
@@ -179,9 +178,7 @@ class SettingsPageState extends State<SettingsPage> {
             enableLabel: true,
             pickerColor: _color,
             onColorChanged: (final color) {
-              setState(() {
-                theme.setColor(color);
-              });
+              setState(() => theme.setColor(color));
 
               Navigator.of(context).pop();
             },

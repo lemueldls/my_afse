@@ -12,15 +12,17 @@ late Student student;
 
 final _prefs = SharedPreferences.getInstance();
 
-Future<Map<String, dynamic>> fetchStudent() async {
+Stream<Map<String, dynamic>> fetchStudent() async* {
   final prefs = await _prefs;
 
-  final data = (await api.get("student"))[0];
+  await for (final response in api.getApi("student")) {
+    final data = response[0];
 
-  student = Student.fromJson(data);
-  await prefs.setString("student", jsonEncode(data));
+    student = Student.fromJson(data);
+    await prefs.setString("student", jsonEncode(data));
 
-  return data;
+    yield data;
+  }
 }
 
 Future<void> initializeStudent() async {
@@ -39,7 +41,7 @@ Future<void> initializeStudent() async {
 
     student = Student.fromJson(data);
   } else
-    await fetchStudent();
+    fetchStudent();
 }
 
 class Student {

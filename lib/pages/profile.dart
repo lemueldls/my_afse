@@ -40,49 +40,13 @@ class ProfilePage extends StatefulWidget {
   ProfilePageState createState() => ProfilePageState();
 }
 
-class Role {
-  final int id;
-  final String name;
-  final String email;
-  final String type;
-  final String schedule;
-
-  const Role({
-    required final this.id,
-    required final this.name,
-    required final this.email,
-    required final this.type,
-    required final this.schedule,
-  });
-
-  factory Role.fromJson(final Map<String, dynamic> role) => Role(
-        id: role["id"],
-        name: role["nickname"],
-        email: role["email"],
-        type: role["type"],
-        schedule: role["schedule_name"],
-      );
-}
-
-class School {
-  final String name;
-
-  const School({required final this.name});
-
-  factory School.fromJson(final List<Map<String, dynamic>> data) {
-    final school = data[0];
-
-    return School(name: school["name"]);
-  }
-}
-
 class ProfilePageState extends State<ProfilePage> {
   final _refreshController = RefreshController();
 
-  late Future<List<Map<String, dynamic>>> _futureSchool = api.get("school");
-  late Future<List<Map<String, dynamic>>> _futureEnrollment =
-      api.get("school_enrollment");
-  late Future<List<Map<String, dynamic>>> _futureRole = api.get("role");
+  late Stream<List<Map<String, dynamic>>> _schoolStream = api.getApi("school");
+  late Stream<List<Map<String, dynamic>>> _enrollmentStream =
+      api.getApi("school_enrollment");
+  late Stream<List<Map<String, dynamic>>> _roleStream = api.getApi("role");
 
   @override
   Widget build(final BuildContext context) {
@@ -127,8 +91,8 @@ class ProfilePageState extends State<ProfilePage> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(right: 16),
-                              child: FutureBuilder<List<Map<String, dynamic>>>(
-                                future: _futureSchool,
+                              child: StreamBuilder<List<Map<String, dynamic>>>(
+                                stream: _schoolStream,
                                 builder: (final context, final snapshot) {
                                   if (snapshot.hasError)
                                     return const Text(
@@ -164,8 +128,8 @@ class ProfilePageState extends State<ProfilePage> {
                     Row(
                       children: [
                         const Text("Enrollment: ", style: bold),
-                        FutureBuilder<List<Map<String, dynamic>>>(
-                          future: _futureEnrollment,
+                        StreamBuilder<List<Map<String, dynamic>>>(
+                          stream: _enrollmentStream,
                           builder: (final context, final snapshot) {
                             if (snapshot.hasError)
                               return const Text(
@@ -190,8 +154,8 @@ class ProfilePageState extends State<ProfilePage> {
 
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: FutureBuilder<List<Map<String, dynamic>>>(
-                        future: _futureRole,
+                      child: StreamBuilder<List<Map<String, dynamic>>>(
+                        stream: _roleStream,
                         builder: (final context, final snapshot) {
                           if (snapshot.hasError)
                             return const Text(
@@ -212,59 +176,62 @@ class ProfilePageState extends State<ProfilePage> {
                           final followersLength = student.followers.length;
                           final hasFollowers = followersLength != 0;
 
-                          // Placeholders
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // Placeholders
 
-                          final teacher = Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              CustomShimmer(width: 90),
-                              CustomShimmer(width: 65),
-                            ],
-                          );
-                          final sub = Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Row(
+                            final teacher = Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: const [
-                                CustomShimmer(width: 150, height: 14),
-                                CustomShimmer(width: 65, height: 14),
+                                CustomShimmer(width: 90),
+                                CustomShimmer(width: 65),
                               ],
-                            ),
-                          );
-
-                          final children = <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8, bottom: 1),
-                              child: teacher,
-                            ),
-                            adviserText,
-                            sub
-                          ];
-
-                          if (hasFollowers) {
-                            children.add(followersText);
-
-                            for (var i = 0; i < followersLength; i++)
-                              children.add(
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Column(children: [teacher, sub]),
-                                ),
-                              );
-
-                            children.add(
-                              const Padding(
-                                padding: EdgeInsets.only(bottom: 2),
+                            );
+                            final sub = Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: const [
+                                  CustomShimmer(width: 150, height: 14),
+                                  CustomShimmer(width: 65, height: 14),
+                                ],
                               ),
                             );
-                          }
 
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting)
+                            final children = <Widget>[
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 8, bottom: 1),
+                                child: teacher,
+                              ),
+                              adviserText,
+                              sub
+                            ];
+
+                            if (hasFollowers) {
+                              children.add(followersText);
+
+                              for (var i = 0; i < followersLength; i++)
+                                children.add(
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Column(children: [teacher, sub]),
+                                  ),
+                                );
+
+                              children.add(
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 2),
+                                ),
+                              );
+                            }
+
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: children,
                             );
+                          }
 
                           final roles = snapshot.data!.map(Role.fromJson);
 
@@ -367,18 +334,53 @@ class ProfilePageState extends State<ProfilePage> {
   }
 
   void _refresh() => setState(() {
-        _futureSchool = api.get("school");
-        _futureEnrollment = api.get("school_enrollment");
-        _futureRole = api.get("role");
+        _schoolStream = api.getApi("school").asBroadcastStream();
+        _enrollmentStream = api.getApi("school_enrollment").asBroadcastStream();
+        _roleStream = api.getApi("role").asBroadcastStream();
 
-        // Still waiting 🥲
         Future.wait([
-          fetchStudent(),
-          _futureSchool,
-          _futureEnrollment,
-          _futureRole,
+          fetchStudent().asBroadcastStream().first,
+          _schoolStream.first,
+          _enrollmentStream.first,
+          _roleStream.first,
         ])
             .then((final data) => _refreshController.refreshCompleted())
             .catchError((final error) => _refreshController.refreshFailed());
       });
+}
+
+class Role {
+  final int id;
+  final String name;
+  final String email;
+  final String type;
+  final String schedule;
+
+  const Role({
+    required final this.id,
+    required final this.name,
+    required final this.email,
+    required final this.type,
+    required final this.schedule,
+  });
+
+  factory Role.fromJson(final Map<String, dynamic> role) => Role(
+        id: role["id"],
+        name: role["nickname"],
+        email: role["email"],
+        type: role["type"],
+        schedule: role["schedule_name"],
+      );
+}
+
+class School {
+  final String name;
+
+  const School({required final this.name});
+
+  factory School.fromJson(final List<Map<String, dynamic>> data) {
+    final school = data[0];
+
+    return School(name: school["name"]);
+  }
 }

@@ -8,7 +8,7 @@ import "routes.dart";
 
 final analytics = production ? FirebaseAnalytics.instance : null;
 
-final List<NavigatorObserver> observer = production
+final observer = production
     // Use analytics when building in production mode.
     ? [
         FirebaseAnalyticsObserver(

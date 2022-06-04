@@ -32,7 +32,7 @@ class WorkCardState extends State<WorkCard> {
 
   int _count = 0;
 
-  late Future<List<Map<String, dynamic>>> futureWork = api.get("${key}_work");
+  late Stream<List<Map<String, dynamic>>> workStream = _broadcastWork();
 
   @override
   Widget build(final BuildContext context) {
@@ -55,8 +55,8 @@ class WorkCardState extends State<WorkCard> {
               ),
               child: Text("${widget.type} Work", style: title),
             ),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: futureWork,
+            StreamBuilder<List<Map<String, dynamic>>>(
+              stream: workStream,
               builder: (final context, final snapshot) {
                 if (snapshot.hasError)
                   return ListTile(
@@ -152,9 +152,12 @@ class WorkCardState extends State<WorkCard> {
     _loadWork();
   }
 
-  void refresh() => setState(() {
-        futureWork = api.get("${key}_work");
-      });
+  void refresh() => setState(() => workStream = _broadcastWork());
+
+  Stream<List<Map<String, dynamic>>> _broadcastWork() =>
+      _fetchWork().asBroadcastStream();
+
+  Stream<List<Map<String, dynamic>>> _fetchWork() => api.getApi("${key}_work");
 
   Future<void> _loadWork() async {
     final prefs = await SharedPreferences.getInstance();

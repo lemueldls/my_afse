@@ -1,4 +1,4 @@
-library my_afse.update;
+library my_afse.updater;
 
 import "dart:io";
 
@@ -30,13 +30,12 @@ void update() {
     OtaUpdate().execute("https://my-afse.deno.dev/app.apk");
 }
 
-Future<String> _fetchLatest() async {
+Future<String?> _fetchLatest() async {
   // This is a server I've set up to get the latest version off GitHub.
   // The code containing this whole function is in `/deploy/main.ts`.
   final response = await http.get(Uri.parse("https://my-afse.deno.dev/"));
 
-  if (response.statusCode == 200)
-    return response.body;
-  else
-    throw Exception("Failed to check for updates");
+  if (response.statusCode == 200) return response.body;
+
+  return null;
 }

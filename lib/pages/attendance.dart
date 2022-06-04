@@ -2,14 +2,13 @@ import "dart:async";
 import "dart:math";
 
 import "package:flutter/material.dart";
-import "package:http/http.dart" as http;
 import "package:intl/intl.dart";
 import "package:linked_scroll_controller/linked_scroll_controller.dart";
 import "package:pull_to_refresh/pull_to_refresh.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:universal_html/parsing.dart";
 
-import "../utils/constants.dart";
+import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
 import "../widgets/error.dart";
@@ -17,7 +16,7 @@ import "../widgets/error.dart";
 const cellSize = 48.0;
 const dateWidth = cellSize * 2.25;
 
-/// Parses the attendance sheet as a HTML document
+/// Parses the attendance sheet as an HTML document
 /// because I can't get any direct data from the API.
 class AttendanceData {
   final List<Day> table;
@@ -66,7 +65,7 @@ class AttendanceData {
 
       /// List of periods per day.
       final day = tds.sublist(3, columns + 3).map((final td) {
-        /// Title can be empty if the period cell dosn't exist,
+        /// Title can be empty if the period cell doesn't exist,
         /// or formatted as `Title - Teacher - Name` instead.
         final title = td.title!;
 
@@ -105,6 +104,114 @@ class AttendancePage extends StatefulWidget {
 
   @override
   AttendancePageState createState() => AttendancePageState();
+}
+
+class AttendancePageState extends State<AttendancePage> {
+  final _refreshController = RefreshController();
+
+  final _controllers = LinkedScrollControllerGroup();
+  late final ScrollController _headController = _controllers.addAndGet();
+  late final ScrollController _bodyController = _controllers.addAndGet();
+
+  final _prefs = SharedPreferences.getInstance();
+
+  int _rows = 15;
+  int _columns = 15;
+
+  late Stream<AttendanceData> _attendanceStream = _broadcastAttendance();
+
+  @override
+  Widget build(final BuildContext context) => SmartRefresher(
+        physics: const BouncingScrollPhysics(),
+        controller: _refreshController,
+        onRefresh: () =>
+            setState(() => _attendanceStream = _broadcastAttendance()),
+        child: StreamBuilder<AttendanceData>(
+          stream: _attendanceStream,
+          builder: (final context, final snapshot) {
+            if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return _AttendancePageShimmer(rows: _rows, columns: _columns);
+
+            final data = snapshot.data!;
+
+            final table = data.table;
+            final columns = data.columns;
+
+            _saveTable(table.length, columns);
+
+            return columns == 0
+                ? const ListTile(
+                    title: Text("There is no attendance data to show."),
+                  )
+                : Column(
+                    children: [
+                      TableHead(
+                        scrollController: _headController,
+                        columns: columns,
+                      ),
+                      Expanded(
+                        child: TableBody(
+                          scrollController: _bodyController,
+                          table: table,
+                          columns: columns,
+                        ),
+                      ),
+                    ],
+                  );
+          },
+        ),
+      );
+
+  @override
+  void dispose() {
+    _headController.dispose();
+    _bodyController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadTable();
+  }
+
+  Stream<AttendanceData> _broadcastAttendance() =>
+      _fetchAttendance().asBroadcastStream()
+        ..first
+            .then((final data) => _refreshController.refreshCompleted())
+            .catchError((final error) => _refreshController.refreshFailed());
+
+  Stream<AttendanceData> _fetchAttendance() async* {
+    try {
+      final stream = api.getCached(
+        "https://api.jumpro.pe/attendance/student_attendance_summary/?as=html&student_id=${student.id}",
+      );
+
+      await for (final response in stream)
+        yield AttendanceData.parseData(response.body);
+    } on Exception {
+      throw Exception("Failed to load attendance");
+    }
+  }
+
+  Future<void> _loadTable() async {
+    final prefs = await _prefs;
+
+    setState(() {
+      _rows = prefs.getInt("rows") ?? _rows;
+      _columns = prefs.getInt("columns") ?? _columns;
+    });
+  }
+
+  Future<void> _saveTable(final int rows, final int columns) async {
+    final prefs = await _prefs;
+
+    await prefs.setInt("rows", _rows = rows);
+    await prefs.setInt("columns", _columns = columns);
+  }
 }
 
 /// Represents a list of periods for a date.
@@ -234,6 +341,81 @@ class TableBody extends StatefulWidget {
   TableBodyState createState() => TableBodyState();
 }
 
+class TableBodyState extends State<TableBody> {
+  final _controllers = LinkedScrollControllerGroup();
+  late final ScrollController _firstColumnController = _controllers.addAndGet();
+  late final ScrollController _restColumnsController = _controllers.addAndGet();
+
+  @override
+  Widget build(final BuildContext context) {
+    final table = widget.table;
+    final columns = widget.columns;
+
+    final length = table.length;
+
+    return Row(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            border: Border(
+              right: BorderSide(color: Colors.grey),
+            ),
+          ),
+          width: dateWidth,
+          child: ListView.builder(
+            controller: _firstColumnController,
+            physics: const ClampingScrollPhysics(),
+            itemCount: length,
+            itemBuilder: (final context, final index) {
+              final date = DateFormat.MMMEd().format(table[index].date);
+
+              return TableCell(
+                value: date,
+                alignment: Alignment.centerLeft,
+              );
+            },
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            controller: widget.scrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const ClampingScrollPhysics(),
+            child: SizedBox(
+              width: columns * cellSize,
+              child: ListView.builder(
+                controller: _restColumnsController,
+                physics: const ClampingScrollPhysics(),
+                itemCount: length,
+                itemBuilder: (final context, final index) {
+                  final row = table[index];
+
+                  return Row(
+                    children: row.data
+                        .map(
+                          (final period) =>
+                              PeriodCell(period: period, date: row.date),
+                        )
+                        .toList(growable: false),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _firstColumnController.dispose();
+    _restColumnsController.dispose();
+
+    super.dispose();
+  }
+}
+
 /// Creates cells in the table body.
 class TableCell extends StatelessWidget {
   final String value;
@@ -345,189 +527,5 @@ class _AttendancePageShimmer extends StatelessWidget {
               ),
             ),
           );
-  }
-}
-
-class AttendancePageState extends State<AttendancePage> {
-  final _refreshController = RefreshController();
-
-  final _controllers = LinkedScrollControllerGroup();
-  late final ScrollController _headController = _controllers.addAndGet();
-  late final ScrollController _bodyController = _controllers.addAndGet();
-
-  final _prefs = SharedPreferences.getInstance();
-
-  int _rows = 15;
-  int _columns = 15;
-
-  late Future<AttendanceData> _futureAttendance = _fetchAttendance();
-
-  @override
-  Widget build(final BuildContext context) => SmartRefresher(
-        physics: const BouncingScrollPhysics(),
-        controller: _refreshController,
-        onRefresh: _refresh,
-        child: FutureBuilder<AttendanceData>(
-          future: _futureAttendance,
-          builder: (final context, final snapshot) {
-            if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
-            if (snapshot.connectionState == ConnectionState.waiting)
-              return _AttendancePageShimmer(rows: _rows, columns: _columns);
-
-            final data = snapshot.data!;
-
-            final table = data.table;
-            final columns = data.columns;
-
-            _saveTable(table.length, columns);
-
-            return columns == 0
-                ? const ListTile(
-                    title: Text("There is no attendance data to show."),
-                  )
-                : Column(
-                    children: [
-                      TableHead(
-                        scrollController: _headController,
-                        columns: columns,
-                      ),
-                      Expanded(
-                        child: TableBody(
-                          scrollController: _bodyController,
-                          table: table,
-                          columns: columns,
-                        ),
-                      ),
-                    ],
-                  );
-          },
-        ),
-      );
-
-  @override
-  void dispose() {
-    _headController.dispose();
-    _bodyController.dispose();
-
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _loadTable();
-  }
-
-  Future<AttendanceData> _fetchAttendance() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-          "https://api.jumpro.pe/attendance/student_attendance_summary/?as=html&student_id=${student.id}",
-        ),
-        headers: userAgentHeader,
-      );
-
-      return AttendanceData.parseData(response.body);
-    } on Exception {
-      throw Exception("Failed to load attendance");
-    }
-  }
-
-  Future<void> _loadTable() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    setState(() => _rows = prefs.getInt("rows") ?? _rows);
-    setState(() => _columns = prefs.getInt("columns") ?? _columns);
-  }
-
-  void _refresh() => setState(() {
-        _futureAttendance = _fetchAttendance();
-
-        _futureAttendance
-            .then((final data) => _refreshController.refreshCompleted())
-            .catchError((final error) => _refreshController.refreshFailed());
-      });
-
-  Future<void> _saveTable(final int rows, final int columns) async {
-    final prefs = await _prefs;
-
-    await prefs.setInt("rows", _rows = rows);
-    await prefs.setInt("columns", _columns = columns);
-  }
-}
-
-class TableBodyState extends State<TableBody> {
-  final _controllers = LinkedScrollControllerGroup();
-  late final ScrollController _firstColumnController = _controllers.addAndGet();
-  late final ScrollController _restColumnsController = _controllers.addAndGet();
-
-  @override
-  Widget build(final BuildContext context) {
-    final table = widget.table;
-    final columns = widget.columns;
-
-    final length = table.length;
-
-    return Row(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            border: Border(
-              right: BorderSide(color: Colors.grey),
-            ),
-          ),
-          width: dateWidth,
-          child: ListView.builder(
-            controller: _firstColumnController,
-            physics: const ClampingScrollPhysics(),
-            itemCount: length,
-            itemBuilder: (final context, final index) {
-              final date = DateFormat.MMMEd().format(table[index].date);
-
-              return TableCell(
-                value: date,
-                alignment: Alignment.centerLeft,
-              );
-            },
-          ),
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            controller: widget.scrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const ClampingScrollPhysics(),
-            child: SizedBox(
-              width: columns * cellSize,
-              child: ListView.builder(
-                controller: _restColumnsController,
-                physics: const ClampingScrollPhysics(),
-                itemCount: length,
-                itemBuilder: (final context, final index) {
-                  final row = table[index];
-
-                  return Row(
-                    children: row.data
-                        .map(
-                          (final period) =>
-                              PeriodCell(period: period, date: row.date),
-                        )
-                        .toList(growable: false),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  void dispose() {
-    _firstColumnController.dispose();
-    _restColumnsController.dispose();
-
-    super.dispose();
   }
 }

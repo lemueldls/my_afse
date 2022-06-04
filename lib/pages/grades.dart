@@ -263,10 +263,144 @@ class GradesPage extends StatefulWidget {
   GradesPageState createState() => GradesPageState();
 }
 
-/// Scores are seperated by two main categories.
+class GradesPageState extends State<GradesPage> {
+  final _refreshController = RefreshController();
+
+  final _prefs = SharedPreferences.getInstance();
+
+  int _scores = 7;
+
+  late Stream<List<Map<String, dynamic>>> _masteryStream = _broadcastScores();
+
+  final _upcomingKey = LabeledGlobalKey<WorkCardState>("Upcoming");
+  final _missingKey = LabeledGlobalKey<WorkCardState>("Missing");
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SmartRefresher(
+      physics: const BouncingScrollPhysics(),
+      controller: _refreshController,
+      onRefresh: _refresh,
+      child: SingleChildScrollView(
+        child: Align(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 750),
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: _masteryStream,
+                      builder: (final context, final snapshot) {
+                        if (snapshot.hasError)
+                          return const ListTile(
+                            title: Text(
+                              "Failed to load grades",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          );
+                        if (snapshot.connectionState == ConnectionState.waiting)
+                          return _GradesPageShimmer(scores: _scores);
+
+                        final data = snapshot.data![0];
+                        final List<dynamic> scoreData =
+                            jsonDecode(data["score_data"]);
+
+                        _saveScores(scoreData.length);
+
+                        final scores = scoreData
+                            .map(
+                              (final score) => MasteryScore.fromJson(
+                                score as Map<String, dynamic>,
+                              ),
+                            )
+                            .toList(growable: false);
+
+                        return scoreData.isEmpty
+                            ? const ListTile(
+                                title: Text("There are no grades to show."),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const ClampingScrollPhysics(),
+                                itemCount: scores.length,
+                                itemBuilder: (final context, final index) =>
+                                    ExpandableTheme(
+                                  data: ExpandableThemeData(
+                                    inkWellBorderRadius:
+                                        BorderRadius.circular(4),
+                                    headerAlignment:
+                                        ExpandablePanelHeaderAlignment.center,
+                                    iconColor: theme.brightness.text,
+                                  ),
+                                  child: GradesNodeTree(score: scores[index]),
+                                ),
+                              );
+                      },
+                    ),
+                  ),
+                ),
+                const Divider(),
+                WorkCard(key: _upcomingKey, type: "Upcoming"),
+                WorkCard(key: _missingKey, type: "Missing"),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadScores();
+  }
+
+  Stream<List<Map<String, dynamic>>> _broadcastScores() =>
+      _fetchScores().asBroadcastStream();
+
+  Stream<List<Map<String, dynamic>>> _fetchScores() =>
+      api.getApi("student_mastery_cache");
+
+  Future<void> _loadScores() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() => _scores = prefs.getInt("scores") ?? _scores);
+  }
+
+  void _refresh() {
+    setState(() => _masteryStream = _broadcastScores());
+
+    final upcomingState = _upcomingKey.currentState!..refresh();
+    final missingState = _missingKey.currentState!..refresh();
+
+    Future.wait([
+      _masteryStream.first,
+      upcomingState.workStream.first,
+      missingState.workStream.first,
+    ])
+        .then((final data) => _refreshController.refreshCompleted())
+        .catchError((final error) => _refreshController.refreshFailed());
+  }
+
+  Future<void> _saveScores(final int scores) async {
+    final prefs = await _prefs;
+
+    await prefs.setInt("scores", _scores = scores);
+  }
+}
+
+/// Scores are separated by two main categories.
 /// We can have "sections" that contain [children], that
 /// can have more "sections", or an assignment.
-/// An assignment are a peice of work that build "sections".
+/// An assignment are a piece of work that build "sections".
 ///
 /// These "sections" are essentially folders, that can contain either
 /// more folders, or a file (an assignment in this context) instead.
@@ -289,7 +423,7 @@ class MasteryScore {
   /// Total weight sum.
   final double sum;
 
-  /// Numer of missing assignments, if any.
+  /// Number of missing assignments, if any.
   final int? missing;
 
   /// Additional scores nested inside.
@@ -448,136 +582,4 @@ class _GradesPageShimmer extends StatelessWidget {
                 ),
               ),
       );
-}
-
-class GradesPageState extends State<GradesPage> {
-  final _refreshController = RefreshController();
-
-  final _prefs = SharedPreferences.getInstance();
-
-  int _scores = 7;
-
-  late Future<List<Map<String, dynamic>>> _futureMastery =
-      api.get("student_mastery_cache");
-
-  final _upcomingKey = LabeledGlobalKey<WorkCardState>("Upcoming");
-  final _missingKey = LabeledGlobalKey<WorkCardState>("Missing");
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SmartRefresher(
-      physics: const BouncingScrollPhysics(),
-      controller: _refreshController,
-      onRefresh: _refresh,
-      child: SingleChildScrollView(
-        child: Align(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 750),
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: FutureBuilder<List<Map<String, dynamic>>>(
-                      future: _futureMastery,
-                      builder: (final context, final snapshot) {
-                        if (snapshot.hasError)
-                          return const ListTile(
-                            title: Text(
-                              "Failed to load grades",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          );
-                        if (snapshot.connectionState == ConnectionState.waiting)
-                          return _GradesPageShimmer(scores: _scores);
-
-                        final data = snapshot.data![0];
-                        final List<dynamic> scoreData =
-                            jsonDecode(data["score_data"]);
-
-                        _saveScores(scoreData.length);
-
-                        final scores = scoreData
-                            .map(
-                              (final score) => MasteryScore.fromJson(
-                                score as Map<String, dynamic>,
-                              ),
-                            )
-                            .toList(growable: false);
-
-                        return scoreData.isEmpty
-                            ? const ListTile(
-                                title: Text("There are no grades to show."),
-                              )
-                            : ListView.builder(
-                                shrinkWrap: true,
-                                physics: const ClampingScrollPhysics(),
-                                itemCount: scores.length,
-                                itemBuilder: (final context, final index) =>
-                                    ExpandableTheme(
-                                  data: ExpandableThemeData(
-                                    inkWellBorderRadius:
-                                        BorderRadius.circular(4),
-                                    headerAlignment:
-                                        ExpandablePanelHeaderAlignment.center,
-                                    iconColor: theme.brightness.text,
-                                  ),
-                                  child: GradesNodeTree(score: scores[index]),
-                                ),
-                              );
-                      },
-                    ),
-                  ),
-                ),
-                const Divider(),
-                WorkCard(key: _upcomingKey, type: "Upcoming"),
-                WorkCard(key: _missingKey, type: "Missing"),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _loadScores();
-  }
-
-  Future<void> _loadScores() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    setState(() => _scores = prefs.getInt("scores") ?? _scores);
-  }
-
-  void _refresh() => setState(() {
-        _futureMastery = api.get("student_mastery_cache");
-
-        final upcomingState = _upcomingKey.currentState!;
-        final missingState = _missingKey.currentState!;
-
-        upcomingState.refresh();
-        missingState.refresh();
-
-        Future.wait([
-          _futureMastery,
-          upcomingState.futureWork,
-          missingState.futureWork,
-        ])
-            .then((final data) => _refreshController.refreshCompleted())
-            .catchError((final error) => _refreshController.refreshFailed());
-      });
-
-  Future<void> _saveScores(final int scores) async {
-    final prefs = await _prefs;
-
-    await prefs.setInt("scores", _scores = scores);
-  }
 }

@@ -109,12 +109,12 @@ class HomePageState extends State<HomePage> {
     eventsState.refresh();
     newsState.refresh();
 
-    Future.wait([eventsState.futureEvents, newsState.futureNews])
+    Future.wait([eventsState.eventsStream.first, newsState.newsStream.first])
         .then((final data) => _refreshController.refreshCompleted())
         .catchError((final error) => _refreshController.refreshFailed());
   }
 
-  /// Update the greeting timley.
+  /// Update the greeting timely.
   Future<void> _updateGreeting() async {
     final now = DateTime.now();
 
@@ -124,7 +124,7 @@ class HomePageState extends State<HomePage> {
     var crisis = prefs.getStringList("crisis") ?? const [""];
     final day = now.day;
 
-    /// Haha.. don't open the app at 2 A.M.
+    /// Haha.. don't open the app at 2am
     const crises = [
       "What if your life is a lie",
       "Does the universe exist",
@@ -138,6 +138,8 @@ class HomePageState extends State<HomePage> {
       "Why do you think we're here",
       "What makes you special",
       "Can art be defined",
+      "What if we're all dead",
+      "i love mang0",
     ];
 
     if (int.tryParse(crisis.first) != day)

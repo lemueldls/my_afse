@@ -1,11 +1,11 @@
 import "dart:math";
 
 import "package:flutter/material.dart";
-import "package:http/http.dart" as http;
 import "package:icalendar_parser/icalendar_parser.dart";
 import "package:intl/intl.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
+import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/url.dart";
 import "../widgets/error.dart";
@@ -39,11 +39,11 @@ class EventCardsState extends State<EventCards> {
 
   int _events = 0;
 
-  late Future<EventData> futureEvents = _fetchEvents();
+  late Stream<EventData> eventsStream = _broadcastEvents();
 
   @override
-  Widget build(final BuildContext context) => FutureBuilder<EventData>(
-        future: futureEvents,
+  Widget build(final BuildContext context) => StreamBuilder<EventData>(
+        stream: eventsStream,
         builder: (final context, final snapshot) {
           if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
           if (snapshot.connectionState == ConnectionState.waiting)
@@ -114,17 +114,16 @@ class EventCardsState extends State<EventCards> {
     _loadEvents();
   }
 
-  void refresh() => setState(() {
-        futureEvents = _fetchEvents();
-      });
+  void refresh() => setState(() => eventsStream = _broadcastEvents());
 
-  Future<EventData> _fetchEvents() async {
+  Stream<EventData> _broadcastEvents() => _fetchEvents().asBroadcastStream();
+
+  Stream<EventData> _fetchEvents() async* {
     try {
-      final response = await http.get(
-        Uri.parse("https://www.afsenyc.org/apps/events/ical"),
-      );
+      final stream = api.getCached("https://www.afsenyc.org/apps/events/ical");
 
-      return EventData.parseData(response.body);
+      await for (final response in stream)
+        yield EventData.parseData(response.body);
     } on Exception {
       throw Exception("Failed to load events");
     }
@@ -184,7 +183,8 @@ class EventData {
           final IcsDateTime start = event["dtstart"];
           final IcsDateTime? end = event["dtend"];
 
-          final formattedStart = DateFormat.MMMMd().format(start.toDateTime()!);
+          final formattedStart =
+              DateFormat.MMMMEEEEd().format(start.toDateTime()!);
           final formattedEnd = end != null ? " to ${jm(end)}" : "";
 
           return Event(

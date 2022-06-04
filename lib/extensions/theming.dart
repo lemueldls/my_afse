@@ -1,25 +1,6 @@
 import "package:flutter/material.dart";
 
-extension TextBrightness on Brightness {
-  /// Inverts brightness for contrasting text color
-  Color get text => this == Brightness.dark ? Colors.white : Colors.black;
-}
-
-extension Material on Color {
-  /// Turns colors into material palletes
-  MaterialColor get material {
-    final swatch = {50: withOpacity(0.1)};
-
-    for (var i = 1; i < 10;) swatch[i * 100] = withOpacity(++i / 10);
-
-    return MaterialColor(value, swatch);
-  }
-}
-
 extension Contrast on ThemeData {
-  Color get textContrastOnPrimary =>
-      primaryColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
-
   bool get isPrimaryContrastingOnBrightness {
     final luminance = primaryColor.computeLuminance();
 
@@ -42,4 +23,23 @@ extension Contrast on ThemeData {
               ? primaryColorDark
               // Use a shade of grey
               : Colors.grey.shade500;
+
+  Color get textContrastOnPrimary =>
+      primaryColor.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+}
+
+extension Material on Color {
+  /// Turns colors into material pallets
+  MaterialColor get material {
+    final swatch = {50: withOpacity(0.1)};
+
+    for (var i = 1; i < 10;) swatch[i * 100] = withOpacity(++i / 10);
+
+    return MaterialColor(value, swatch);
+  }
+}
+
+extension TextBrightness on Brightness {
+  /// Inverts brightness for contrasting text color
+  Color get text => this == Brightness.dark ? Colors.white : Colors.black;
 }

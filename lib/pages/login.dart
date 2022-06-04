@@ -43,7 +43,7 @@ class LoginPageState extends State<LoginPage> {
   ) async {
     final navigator = Navigator.of(context);
 
-    final student = await fetchStudent();
+    final student = await fetchStudent().first;
 
     final id = student["id"].toString();
 
@@ -245,8 +245,10 @@ class LoginPageState extends State<LoginPage> {
 
       final username = account.username!;
 
-      await prefs.setString("username", username);
-      await prefs.setString("auth", _password);
+      await Future.wait([
+        prefs.setString("username", username),
+        prefs.setString("auth", _password),
+      ]);
 
       await authenticate(username, _password);
     } else

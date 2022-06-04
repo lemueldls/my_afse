@@ -3,12 +3,12 @@ import "dart:math";
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:flutter_linkify/flutter_linkify.dart";
-import "package:http/http.dart" as http;
 import "package:intl/intl.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:webfeed/webfeed.dart";
 
 import "../extensions/list.dart";
+import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/url.dart";
 import "../widgets/error.dart";
@@ -41,7 +41,7 @@ class NewsCardsState extends State<NewsCards> {
 
   int _news = 0;
 
-  late Future<NewsData> futureNews = _fetchNews();
+  late Stream<NewsData> newsStream = _broadcastNews();
 
   @override
   Widget build(final BuildContext context) {
@@ -50,8 +50,8 @@ class NewsCardsState extends State<NewsCards> {
 
     final link = textTheme.bodyText2!.copyWith(color: theme.primaryColor);
 
-    return FutureBuilder<NewsData>(
-      future: futureNews,
+    return StreamBuilder<NewsData>(
+      stream: newsStream,
       builder: (final context, final snapshot) {
         if (snapshot.hasError) return ErrorCard(error: "${snapshot.error}");
         if (snapshot.connectionState == ConnectionState.waiting)
@@ -123,14 +123,20 @@ class NewsCardsState extends State<NewsCards> {
                               if (image != null)
                                 Expanded(
                                   flex: 0,
-                                  child: CachedNetworkImage(
-                                    alignment: Alignment.topCenter,
-                                    imageUrl: image,
-                                    placeholder: (final context, final url) =>
-                                        const CustomShimmer(
-                                      width: 75,
-                                      height: 40,
-                                      radius: 0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: CachedNetworkImage(
+                                      alignment: Alignment.topCenter,
+                                      imageUrl: image,
+                                      maxWidthDiskCache: 75,
+                                      placeholder: (final context, final url) =>
+                                          const CustomShimmer(
+                                        width: 75,
+                                        height: 40,
+                                        radius: 0,
+                                      ),
                                     ),
                                   ),
                                 )
@@ -168,17 +174,19 @@ class NewsCardsState extends State<NewsCards> {
     _loadNews();
   }
 
-  void refresh() => setState(() {
-        futureNews = _fetchNews();
-      });
+  void refresh() => setState(() => newsStream = _broadcastNews());
 
-  Future<NewsData> _fetchNews() async {
+  Stream<NewsData> _broadcastNews() => _fetchNews().asBroadcastStream();
+
+  Stream<NewsData> _fetchNews() async* {
     try {
-      final response = await http.get(
-        Uri.parse("https://www.afsenyc.org/apps/news/rss"),
+      final stream = api.getCached(
+        "https://www.afsenyc.org/apps/news/rss",
       );
 
-      return NewsData.parseData(response.body);
+      await for (final response in stream) {
+        yield NewsData.parseData(response.body);
+      }
     } on Exception {
       throw Exception("Failed to load news");
     }
@@ -221,7 +229,7 @@ class NewsData {
             (final item) => News(
               title: item.title!,
               description: item.description,
-              date: DateFormat.MMMMd().format(item.pubDate!),
+              date: DateFormat.MMMMEEEEd().format(item.pubDate!),
               image: item.media!.contents!.tryGet(0)?.url,
               url: item.link!,
             ),

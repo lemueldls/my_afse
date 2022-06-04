@@ -2,6 +2,7 @@ import "package:firebase_auth/firebase_auth.dart";
 import "package:firebase_core/firebase_core.dart";
 import "package:flutter/material.dart";
 import "package:flutter_shortcuts/flutter_shortcuts.dart";
+import "package:hive_flutter/hive_flutter.dart";
 import "package:provider/provider.dart";
 import "package:pull_to_refresh/pull_to_refresh.dart";
 
@@ -11,8 +12,7 @@ import "utils/student.dart";
 import "utils/theme.dart";
 
 Future<void> main() async {
-  // Helps to initialize top-level shared preferences correctly.
-  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
 
   // Load Firebase, settings, and student.
   await Future.wait([
@@ -42,7 +42,7 @@ class AppBuilderState extends State<AppBuilder> {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (final context, final snapshot) {
           if (snapshot.hasError) return Text("${snapshot.error}");
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             // Show a circular loading indicator
             return MaterialApp(
               theme: ThemeData(
@@ -53,7 +53,6 @@ class AppBuilderState extends State<AppBuilder> {
                 body: Center(child: CircularProgressIndicator()),
               ),
             );
-          }
 
           // Create an automatic theme changer
           return ChangeNotifierProvider(
@@ -62,12 +61,19 @@ class AppBuilderState extends State<AppBuilder> {
             child: RefreshConfiguration(
               headerBuilder: () => const WaterDropMaterialHeader(),
               enableRefreshVibrate: true,
-              // Load app with the current authencation state
+              // Load app with the current authentication state
               child: App(loggedIn: snapshot.data != null, page: _page),
             ),
           );
         },
       );
+
+  @override
+  void dispose() {
+    Hive.close();
+
+    super.dispose();
+  }
 
   @override
   void initState() {
