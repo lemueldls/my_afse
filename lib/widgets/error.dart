@@ -8,9 +8,15 @@ class ErrorCard extends StatelessWidget {
       : super(key: key);
 
   @override
-  Widget build(final BuildContext context) => Card(
-        child: ListTile(
-          title: Text(error, style: const TextStyle(color: Colors.red)),
-        ),
-      );
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      color: colorScheme.error,
+      child: ListTile(
+        textColor: colorScheme.onError,
+        title: Text(error),
+      ),
+    );
+  }
 }

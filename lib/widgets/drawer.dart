@@ -1,7 +1,6 @@
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 
-import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/routes.dart";
 import "../utils/student.dart";
@@ -31,11 +30,11 @@ class DrawerListTile extends StatelessWidget {
     final name = title ?? pageRoute.title;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         selected: currentRoute == route,
         leading: icon ? pageRoute.icon : null,
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(name),
         subtitle: subtitle != null ? Text(subtitle!) : null,
         onTap: onTap ??
             () {
@@ -56,24 +55,30 @@ class PageDrawer extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    final selectedColor = theme.brightness.text;
-    final selectedTileColor = theme.primaryColor.withAlpha(85);
-    final contrast = theme.textContrastOnPrimary;
+    final colorScheme = theme.colorScheme;
 
     const clampingScroll = ClampingScrollPhysics();
 
     return Drawer(
-      child: ListTileTheme(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+      // width: 360,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
-        selectedColor: selectedColor,
-        selectedTileColor: selectedTileColor,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Column(
-            children: [
-              Expanded(
+      ),
+      child: ListTileTheme(
+        // horizontalTitleGap: 0,
+        iconColor: colorScheme.onSecondaryContainer,
+        textColor: colorScheme.onSecondaryContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
                 child: ListView(
                   shrinkWrap: true,
                   physics: clampingScroll,
@@ -84,7 +89,7 @@ class PageDrawer extends StatelessWidget {
                       subtitle: student.email,
                       icon: false,
                     ),
-                    const Divider(height: 8),
+                    const DrawerDivider(),
                     const DrawerListTile(route: "/home"),
                     const DrawerListTile(route: "/schedule"),
                     const DrawerListTile(route: "/grades"),
@@ -92,40 +97,48 @@ class PageDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              ListView(
-                shrinkWrap: true,
-                physics: clampingScroll,
-                children: [
-                  if (updater.prompt)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: TextButtonTheme(
-                        data: TextButtonThemeData(
-                          style: TextButton.styleFrom(primary: contrast),
-                        ),
-                        child: MaterialBanner(
-                          contentTextStyle: TextStyle(color: contrast),
-                          content: const Text("A new version is now available"),
-                          leading: Icon(Icons.download, color: contrast),
-                          actions: const [
-                            TextButton(
-                              onPressed: updater.update,
-                              child: Text("UPDATE"),
-                            ),
-                          ],
-                        ),
-                      ),
+            ),
+            ListView(
+              shrinkWrap: true,
+              physics: clampingScroll,
+              children: [
+                if (updater.prompt)
+                  MaterialBanner(
+                    backgroundColor: colorScheme.secondary,
+                    contentTextStyle: TextStyle(
+                      color: colorScheme.onSecondary,
                     ),
-                  DrawerListTile(
-                    route: "/login",
-                    onTap: () => _logout(context),
+                    content: const Text("A new version is now available"),
+                    leading: Icon(
+                      Icons.download,
+                      color: colorScheme.onSecondary,
+                    ),
+                    actions: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          primary: colorScheme.onSecondary,
+                        ),
+                        onPressed: updater.update,
+                        child: const Text("Update"),
+                      ),
+                    ],
                   ),
-                  const Divider(height: 8, indent: 8, endIndent: 8),
-                  const DrawerListTile(route: "/settings")
-                ],
-              )
-            ],
-          ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      DrawerListTile(
+                        route: "/login",
+                        onTap: () => _logout(context),
+                      ),
+                      const DrawerDivider(),
+                      const DrawerListTile(route: "/settings"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -139,7 +152,7 @@ class PageDrawer extends StatelessWidget {
           return AlertDialog(
             title: const Text("Are you sure you want to logout?"),
             actions: [
-              TextButton(onPressed: navigator.pop, child: const Text("NO")),
+              TextButton(onPressed: navigator.pop, child: const Text("No")),
               TextButton(
                 onPressed: () async {
                   await api.logout();
@@ -150,10 +163,24 @@ class PageDrawer extends StatelessWidget {
                     (final route) => false,
                   );
                 },
-                child: const Text("YES"),
+                child: const Text("Yes"),
               )
             ],
           );
         },
+      );
+}
+
+class DrawerDivider extends StatelessWidget {
+  const DrawerDivider({
+    final Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(final BuildContext context) => Divider(
+        height: 12,
+        indent: 16,
+        endIndent: 16,
+        color: Theme.of(context).colorScheme.outline,
       );
 }

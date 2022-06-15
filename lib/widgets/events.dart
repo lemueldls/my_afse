@@ -13,6 +13,8 @@ import "../widgets/error.dart";
 /// Convert to `HOUR_MINUTE` format.
 String jm(final IcsDateTime time) => DateFormat.jm().format(time.toDateTime()!);
 
+const perShow = 5;
+
 class Event {
   final String summary;
   final String time;
@@ -38,6 +40,7 @@ class EventCardsState extends State<EventCards> {
   final _prefs = SharedPreferences.getInstance();
 
   int _events = 0;
+  int _show = perShow;
 
   late Stream<EventData> eventsStream = _broadcastEvents();
 
@@ -52,57 +55,89 @@ class EventCardsState extends State<EventCards> {
           final events = snapshot.data!.events;
           final length = events.length;
 
-          _saveEvents(length);
+          _saveEvents(min(perShow, length));
 
           return events.isEmpty
-              ? const Card(
-                  child: ListTile(
-                    enabled: false,
-                    title: Text("There are no upcoming events."),
-                  ),
+              ? const ListTile(
+                  enabled: false,
+                  title: Text("There are no upcoming events."),
                 )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: length,
-                  itemBuilder: (final context, final index) {
-                    final event = events[index];
+              : Column(
+                  children: [
+                    ListView.separated(
+                      shrinkWrap: true,
+                      separatorBuilder: (final context, final i) =>
+                          const Divider(
+                        height: 0,
+                      ),
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: _show,
+                      itemBuilder: (final context, final index) {
+                        final event = events[index];
 
-                    final location = event.location;
-                    final hasLocation = location != null;
+                        final location = event.location;
+                        final hasLocation = location != null;
 
-                    return Card(
-                      child: ListTile(
-                        isThreeLine: hasLocation,
-                        title: Text(event.summary),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Time
-                            Text(event.time),
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          isThreeLine: hasLocation,
+                          title: Text(event.summary),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Time
+                              Text(event.time),
 
-                            // Location, if any
-                            if (hasLocation)
-                              Row(
-                                children: [
-                                  const Text(
-                                    "Location: ",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                              // Location, if any
+                              if (hasLocation)
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "Location: ",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(location)
+                                  ],
+                                )
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.open_in_new),
+                            onPressed: () => launchURL(event.url),
+                          ),
+                        );
+                      },
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: _show == perShow
+                              ? null
+                              : () => setState(
+                                    () => _show = max(
+                                      _show - perShow,
+                                      perShow,
                                     ),
                                   ),
-                                  Text(location)
-                                ],
-                              )
-                          ],
+                          child: const Text("Show less"),
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.open_in_new),
-                          onPressed: () => launchURL(event.url),
+                        TextButton(
+                          onPressed: _show == length
+                              ? null
+                              : () => setState(
+                                    () => _show = min(
+                                      _show + perShow,
+                                      length,
+                                    ),
+                                  ),
+                          child: const Text("Show more"),
                         ),
-                      ),
-                    );
-                  },
+                      ],
+                    ),
+                  ],
                 );
         },
       );
@@ -175,8 +210,7 @@ class EventData {
       );
 
     return EventData(
-      events: events.take(5).map(
-        // Use and format only the first 5 events.
+      events: events.map(
         (final event) {
           final String summary = event["summary"];
 

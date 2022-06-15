@@ -4,7 +4,6 @@ import "package:flutter/material.dart";
 import "package:flutter_shortcuts/flutter_shortcuts.dart";
 import "package:hive_flutter/hive_flutter.dart";
 import "package:provider/provider.dart";
-import "package:pull_to_refresh/pull_to_refresh.dart";
 
 import "app.dart";
 import "utils/settings.dart";
@@ -58,12 +57,7 @@ class AppBuilderState extends State<AppBuilder> {
           return ChangeNotifierProvider(
             create: (final context) => ThemeChanger(),
             // Global refresh indicator configuration
-            child: RefreshConfiguration(
-              headerBuilder: () => const WaterDropMaterialHeader(),
-              enableRefreshVibrate: true,
-              // Load app with the current authentication state
-              child: App(loggedIn: snapshot.data != null, page: _page),
-            ),
+            child: App(loggedIn: snapshot.data != null, page: _page),
           );
         },
       );

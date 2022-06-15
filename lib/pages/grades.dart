@@ -23,13 +23,14 @@ class GradesNodeTree extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     const colors = {
-      "Green": Colors.green,
-      "Orange": Colors.amber,
-      "Red": Colors.red,
-      "Blue": Colors.blue,
+      "green": Colors.green,
+      "orange": Colors.amber,
+      "red": Colors.red,
+      "blue": Colors.blue,
     };
 
     /// Linear bar containing the score.
@@ -43,7 +44,7 @@ class GradesNodeTree extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: score.percent,
-              color: colors[score.color],
+              color: colors[score.color.toLowerCase()],
               minHeight: 24,
             ),
           ),
@@ -98,35 +99,35 @@ class GradesNodeTree extends StatelessWidget {
                               // Date updated
                               Text(
                                 "Updated ${score.recent}",
-                                style: textTheme.bodyText2!
-                                    .copyWith(color: textTheme.caption!.color),
+                                style: textTheme.bodySmall,
                               ),
-
                               // Missing assignments
                               if (missing != 0)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 8),
+                                  padding: const EdgeInsets.only(left: 16),
                                   child: Row(
                                     children: [
                                       Container(
-                                        constraints: const BoxConstraints(
-                                          minWidth: 20,
-                                          minHeight: 20,
-                                        ),
+                                        width: 20,
+                                        height: 20,
+                                        // constraints: const BoxConstraints(
+                                        //   minWidth: 20,
+                                        //   minHeight: 20,
+                                        // ),
                                         alignment: Alignment.center,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 3,
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.red.shade400,
+                                          color: colorScheme.errorContainer,
                                           borderRadius:
                                               BorderRadius.circular(4),
                                         ),
                                         child: Text(
                                           "$missing",
-                                          style: const TextStyle(
-                                            color: Colors.white,
+                                          style: TextStyle(
+                                            color: colorScheme.onErrorContainer,
                                             fontSize: 12,
                                           ),
                                         ),
@@ -157,7 +158,7 @@ class GradesNodeTree extends StatelessWidget {
                 physics: const ClampingScrollPhysics(),
                 itemCount: children.length,
                 itemBuilder: (final context, final index) =>
-                    // ~Recursion~
+                    // Recursion~
                     GradesNodeTree(score: children[index]),
               ),
             ),
@@ -280,14 +281,13 @@ class GradesPageState extends State<GradesPage> {
     final theme = Theme.of(context);
 
     return SmartRefresher(
-      physics: const BouncingScrollPhysics(),
       controller: _refreshController,
       onRefresh: _refresh,
       child: SingleChildScrollView(
         child: Align(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 750),
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -298,10 +298,10 @@ class GradesPageState extends State<GradesPage> {
                       stream: _masteryStream,
                       builder: (final context, final snapshot) {
                         if (snapshot.hasError)
-                          return const ListTile(
+                          return ListTile(
                             title: Text(
                               "Failed to load grades",
-                              style: TextStyle(color: Colors.red),
+                              style: TextStyle(color: theme.errorColor),
                             ),
                           );
                         if (snapshot.connectionState == ConnectionState.waiting)
@@ -496,7 +496,7 @@ class MasteryScore {
       title: json["assessment_title"],
       comment: json["comment"],
       recent: recent != null
-          ? DateFormat.MMMEd().format(format.parse(recent))
+          ? DateFormat.MMMMEEEEd().format(format.parse(recent))
           : null,
       weight: weight?.toStringAsFixed(1),
       end:

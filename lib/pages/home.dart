@@ -37,47 +37,43 @@ class HomePageState extends State<HomePage> {
     final textTheme = Theme.of(context).textTheme;
 
     return SmartRefresher(
-      physics: const BouncingScrollPhysics(),
       controller: _refreshController,
       onRefresh: _refresh,
       child: SingleChildScrollView(
         child: Align(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 750),
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Greeting message
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: _greeting != null
-                            ? Text(
-                                "$_greeting, ${student.firstName}",
-                                style: textTheme.headline4,
-                                textAlign: TextAlign.center,
-                              )
-                            : const CustomShimmer(padding: EdgeInsets.all(16)),
-                      ),
-                    ],
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: _greeting != null
+                          ? Text(
+                              "$_greeting, ${student.firstName}",
+                              style: textTheme.displaySmall,
+                              textAlign: TextAlign.center,
+                            )
+                          : const CustomShimmer(padding: EdgeInsets.all(16)),
+                    ),
+                  ],
                 ),
 
-                const Divider(),
+                // const Divider(),
 
                 Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Text("Events", style: textTheme.headline6),
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text("Upcoming events", style: textTheme.titleMedium),
                 ),
                 EventCards(key: _eventsKey),
 
                 Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Text("News", style: textTheme.headline6),
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text("Recent news", style: textTheme.titleMedium),
                 ),
                 NewsCards(key: _newsKey),
               ],
@@ -181,6 +177,6 @@ class HomePageState extends State<HomePage> {
     _timer = Timer(next, _updateGreeting);
 
     final greeting = messages[message.tryGet(0) ?? keys.last]!;
-    if (_greeting != greeting) setState(() => _greeting = greeting);
+    if (_greeting != greeting && mounted) setState(() => _greeting = greeting);
   }
 }

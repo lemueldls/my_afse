@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:provider/provider.dart";
+import "package:pull_to_refresh/pull_to_refresh.dart";
 
-import "extensions/theming.dart";
 import "utils/analytics.dart";
 import "utils/constants.dart";
 import "utils/routes.dart";
@@ -36,63 +36,60 @@ class App extends StatelessWidget {
     );
 
     /// Helpful for starting up a specific page in debug mode.
-    const debugPage = production ? null : "/home";
+    const debugPage = isProduction ? null : "/grades";
 
     final theme = Provider.of<ThemeChanger>(context);
 
     final brightness = theme.dark ? Brightness.dark : Brightness.light;
     final color = theme.color;
 
-    final contrast = ThemeData.estimateBrightnessForColor(color);
-
     final themeData = ThemeData(
+      useMaterial3: true,
+      colorSchemeSeed: color,
       brightness: brightness,
-      primaryColor: color,
-      primarySwatch: color,
     );
 
-    return MaterialApp(
-      title: "My AFSE",
-      theme: themeData.copyWith(
-        appBarTheme: AppBarTheme(
-          foregroundColor: contrast.text,
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(primary: themeData.primaryTextContrast),
-        ),
-        snackBarTheme: SnackBarThemeData(
-          actionTextColor:
-              // If the theme is light on dark
-              themeData.isPrimaryContrastingOnBrightness
-                  // Use a shade of grey
-                  ? Colors.grey.shade500
-                  // Fallback to the primary color
-                  : null,
-        ),
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: color,
-          cardColor: color,
-          brightness: brightness,
-        ),
-        switchTheme: SwitchThemeData(
-          thumbColor: MaterialStateProperty.resolveWith(
-            (final states) => _getColor(states, color),
-          ),
-          trackColor: MaterialStateProperty.resolveWith(
-            (final states) => _getColor(states, color)?.shade600,
-          ),
-        ),
+    final colorScheme = themeData.colorScheme;
+
+    return RefreshConfiguration(
+      headerBuilder: () => WaterDropMaterialHeader(
+        backgroundColor: themeData.colorScheme.primaryContainer,
+        color: themeData.colorScheme.onPrimaryContainer,
       ),
-      routes: routes,
-      initialRoute: loggedIn ? debugPage ?? page : "/login",
-      navigatorObservers: observer,
+      enableRefreshVibrate: true,
+      // Load app with the current authentication state
+      child: MaterialApp(
+        title: "My AFSE",
+        theme: themeData.copyWith(
+          listTileTheme: ListTileThemeData(
+            selectedColor: colorScheme.onSecondaryContainer,
+            selectedTileColor: colorScheme.secondaryContainer,
+          ),
+          cardTheme: const CardTheme(
+            margin: EdgeInsets.symmetric(vertical: 8),
+          ),
+          switchTheme: SwitchThemeData(
+            thumbColor: MaterialStateProperty.resolveWith(
+              (final states) =>
+                  _generateSwitchStates(states, colorScheme.secondary),
+            ),
+            trackColor: MaterialStateProperty.resolveWith(
+              (final states) =>
+                  _generateSwitchStates(states, colorScheme.onSecondary),
+            ),
+          ),
+        ),
+        routes: routes,
+        initialRoute: loggedIn ? debugPage ?? page : "/login",
+        navigatorObservers: observer,
+      ),
     );
   }
 
   /// Used to get colors for switch states.
-  MaterialColor? _getColor(
+  Color? _generateSwitchStates(
     final Set<MaterialState> states,
-    final MaterialColor color,
+    final Color color,
   ) {
     const interactiveStates = <MaterialState>{
       MaterialState.pressed,

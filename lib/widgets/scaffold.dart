@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 
+import "../utils/constants.dart";
 import "../utils/updater.dart" as updater;
 import "drawer.dart";
 
@@ -15,7 +16,7 @@ class PageScaffold extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    _checkUpdates(context);
+    if (isProduction) _checkUpdates(context);
 
     final scaffoldKey = LabeledGlobalKey<ScaffoldState>("Scaffold");
 
@@ -44,6 +45,7 @@ class PageScaffold extends StatelessWidget {
   /// Show a snackbar popup when there's a new update.
   Future<void> _checkUpdates(final BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     await updater.checkLatest();
 
@@ -51,11 +53,16 @@ class PageScaffold extends StatelessWidget {
 
     messenger.showSnackBar(
       SnackBar(
-        content: const Text("A new version is now available"),
+        backgroundColor: colorScheme.inverseSurface,
+        content: Text(
+          "A new version is now available",
+          style: TextStyle(color: colorScheme.onInverseSurface),
+        ),
         behavior: SnackBarBehavior.floating,
         onVisible: () => updater.dismissed = true,
-        action: const SnackBarAction(
+        action: SnackBarAction(
           label: "UPDATE",
+          textColor: colorScheme.inversePrimary,
           onPressed: updater.update,
         ),
       ),

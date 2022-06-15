@@ -10,7 +10,6 @@ import "package:universal_html/parsing.dart";
 
 import "../extensions/int.dart";
 import "../extensions/list.dart";
-import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
@@ -59,10 +58,6 @@ class PeriodListViewState extends State<PeriodListView> {
     final day = widget.day;
     final today = widget.today;
 
-    final theme = Theme.of(context);
-    final selectedColor = theme.textContrastOnPrimary;
-    final selectedTileColor = theme.primaryColor;
-
     if (today && day.first.start != null && day.first.end != null) {
       /// Update the currently selected period.
       void update() {
@@ -91,7 +86,7 @@ class PeriodListViewState extends State<PeriodListView> {
       shrinkWrap: true,
       physics: const ClampingScrollPhysics(),
       separatorBuilder: (final context, final index) => const Divider(
-        height: 1,
+        height: 0,
         indent: 16,
         endIndent: 16,
       ),
@@ -103,37 +98,33 @@ class PeriodListViewState extends State<PeriodListView> {
 
         final width = MediaQuery.of(context).size.width;
 
-        return ListTileTheme(
-          selectedColor: selectedColor,
-          selectedTileColor: selectedTileColor,
-          child: ListTile(
-            selected: selected,
-            leading: Padding(
-              padding: const EdgeInsets.only(top: 3.5),
-              child: Text(
-                period.index.toString(),
-                style: selected ? null : const TextStyle(color: Colors.grey),
-              ),
+        return ListTile(
+          selected: selected,
+          leading: Padding(
+            padding: const EdgeInsets.only(top: 3.5),
+            child: Text(
+              period.index.toString(),
+              style: selected ? null : const TextStyle(color: Colors.grey),
             ),
-            title: Row(
-              children: [
-                // Show time for bigger screens.
-                if (width >= 750 && period.start != null && period.end != null)
-                  SizedBox(
-                    width: 200,
-                    child: Text(
-                      "${period.start} \u2013 ${period.end}",
-                      style: selected
-                          ? null
-                          : TextStyle(color: Colors.grey.shade400),
-                    ),
-                  ),
-                Flexible(child: Text(period.name)),
-              ],
-            ),
-            trailing: Text(period.room ?? ""),
-            onTap: () => _selectPeriod(period),
           ),
+          title: Row(
+            children: [
+              // Show time for bigger screens.
+              if (width >= 750 && period.start != null && period.end != null)
+                SizedBox(
+                  width: 200,
+                  child: Text(
+                    "${period.start} \u2013 ${period.end}",
+                    style: selected
+                        ? null
+                        : TextStyle(color: Colors.grey.shade400),
+                  ),
+                ),
+              Flexible(child: Text(period.name)),
+            ],
+          ),
+          trailing: Text(period.room ?? ""),
+          onTap: () => _selectPeriod(period),
         );
       },
     );
@@ -157,12 +148,6 @@ class PeriodListViewState extends State<PeriodListView> {
       context: context,
       builder: (final context) => AlertDialog(
         title: Text(period.name),
-        contentPadding: const EdgeInsets.only(
-          left: 24,
-          top: 8,
-          right: 24,
-          bottom: 24,
-        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,6 +234,20 @@ class ScheduleData {
     /// A list of days.
     final schedule = <List<Period>>[];
 
+    // A fallback list of period times.
+    const fallback = [
+      "8:00 AM",
+      "9:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "12:00 PM",
+      "1:00 PM",
+      "1:40 PM",
+      "2:20 PM",
+      "3:20 PM",
+      "4:20 PM",
+    ];
+
     for (var i = 2; i < DateTime.daysPerWeek; i++) {
       final day = <Period>[];
 
@@ -266,10 +265,11 @@ class ScheduleData {
         /// Time of period parsed into a more readable format.
         /// Example: `["1:40 PM", "2:20 PM"]`
         final time = timeRow?.split("-").map((final time) {
-          final start = int.parse(time.split(":")[0]);
+              final start = int.parse(time.split(":")[0]);
 
-          return "${time.trim()} ${start > 5 && start != 12 ? "A" : "P"}M";
-        }).toList(growable: false);
+              return "${time.trim()} ${start > 5 && start != 12 ? "A" : "P"}M";
+            }).toList(growable: false) ??
+            [fallback[row], fallback[row + 1]];
 
         final data = cell.text!
             .split("\n")
@@ -285,8 +285,8 @@ class ScheduleData {
           Period(
             index: row,
             name: name,
-            start: time?[0],
-            end: time?[1],
+            start: time[0],
+            end: time[1],
             teachers: teachers == "None" ? null : teachers.split(", "),
             room: room?.split("Room ")[1] ?? room,
           ),
@@ -315,7 +315,6 @@ class SchedulePageState extends State<SchedulePage> {
 
   int _periods = 7;
 
-  // ignore: prefer_final_fields
   late Stream<ScheduleData> _scheduleStream = _broadcastSchedule();
 
   /// Timer used to switch to the current day.
@@ -324,12 +323,13 @@ class SchedulePageState extends State<SchedulePage> {
 
   @override
   Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-    final title = Theme.of(context).textTheme.headline6;
-
     return SmartRefresher(
-      physics: const BouncingScrollPhysics(),
       controller: _refreshController,
       onRefresh: () => setState(() => _scheduleStream = _broadcastSchedule()),
       child: SingleChildScrollView(
@@ -391,7 +391,10 @@ class SchedulePageState extends State<SchedulePage> {
                               ),
                               Expanded(
                                 flex: 0,
-                                child: Text(weekdays[weekday], style: title),
+                                child: Text(
+                                  weekdays[weekday],
+                                  style: textTheme.titleLarge,
+                                ),
                               ),
                               Expanded(
                                 child: IconButton(
@@ -497,7 +500,7 @@ class _SchedulePageShimmer extends StatelessWidget {
             shrinkWrap: true,
             physics: const ClampingScrollPhysics(),
             separatorBuilder: (final context, final index) => const Divider(
-              height: 1,
+              height: 0,
               indent: 16,
               endIndent: 16,
             ),

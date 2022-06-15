@@ -36,9 +36,10 @@ class WorkCardState extends State<WorkCard> {
 
   @override
   Widget build(final BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
-    final title = textTheme.headline6;
+    final title = textTheme.titleLarge;
 
     return Card(
       child: Padding(
@@ -62,7 +63,7 @@ class WorkCardState extends State<WorkCard> {
                   return ListTile(
                     title: Text(
                       "Failed to load $key work",
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(color: theme.errorColor),
                     ),
                   );
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -103,7 +104,7 @@ class WorkCardState extends State<WorkCard> {
                                         Expanded(
                                           child: Text(
                                             work.title,
-                                            style: textTheme.subtitle1,
+                                            style: textTheme.titleMedium,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
                                           ),
@@ -120,8 +121,8 @@ class WorkCardState extends State<WorkCard> {
                                             work.description
                                                 .replaceAll("\n", " "),
                                             style:
-                                                textTheme.bodyText2?.copyWith(
-                                              color: textTheme.caption!.color,
+                                                textTheme.bodyMedium?.copyWith(
+                                              color: textTheme.bodySmall?.color,
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 2,
@@ -173,12 +174,12 @@ class WorkCardState extends State<WorkCard> {
 
   void _selectWork(final WorkData work) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     const bold = TextStyle(fontWeight: FontWeight.bold);
 
-    final link =
-        textTheme.bodyText2!.copyWith(color: theme.primaryTextContrast);
+    final link = textTheme.bodyMedium?.copyWith(color: colorScheme.primary);
 
     final description = work.description;
     final code = work.code;

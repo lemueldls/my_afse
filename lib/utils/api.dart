@@ -26,7 +26,7 @@ Stream<List<Map<String, API>>> getApi<API>(final String api) async* {
   final prefs = await _prefs;
 
   final token = prefs.getString("token");
-  await validate(token!);
+  if (token != null) await validate(token);
 
   final username = prefs.getString("username");
 
@@ -48,7 +48,7 @@ Stream<List<Map<String, API>>> getApi<API>(final String api) async* {
           .toList(growable: false);
     } else {
       _validated = null;
-      await validate(token);
+      await validate(token!);
 
       await for (final data in getApi<API>(api)) yield data;
     }
@@ -92,40 +92,40 @@ Future<LoginResponse> login(
 ) async {
   final prefs = await _prefs;
 
-  try {
-    const headers = {
-      ...userAgentHeader,
-      HttpHeaders.contentTypeHeader: "application/x-www-form-urlencoded",
-    };
-    final request =
-        http.Request("POST", Uri.parse("https://services.jumpro.pe/login/"))
-          ..bodyFields = {"username": username, "password": auth}
-          ..followRedirects = false
-          ..headers.addAll(headers);
+  // try {
+  const headers = {
+    ...userAgentHeader,
+    HttpHeaders.contentTypeHeader: "application/x-www-form-urlencoded",
+  };
+  final request =
+      http.Request("POST", Uri.parse("https://services.jumpro.pe/login/"))
+        ..bodyFields = {"username": username, "password": auth}
+        ..followRedirects = false
+        ..headers.addAll(headers);
 
-    final response = await request.send();
+  final response = await request.send();
 
-    if (response.statusCode == 200) {
-      final error = parseHtmlDocument(await response.stream.bytesToString())
-          .querySelector(".text-danger")!
-          .innerText;
+  if (response.statusCode == 200) {
+    final error = parseHtmlDocument(await response.stream.bytesToString())
+        .querySelector(".text-danger")!
+        .innerText;
 
-      return LoginResponse(success: false, message: error, token: null);
-    } else {
-      final token =
-          Uri.parse(response.headers["location"]!).queryParameters["st"]!;
+    return LoginResponse(success: false, message: error, token: null);
+  } else {
+    final token =
+        Uri.parse(response.headers["location"]!).queryParameters["st"]!;
 
-      await prefs.setString("token", token);
+    await prefs.setString("token", token);
 
-      return LoginResponse(success: true, message: null, token: token);
-    }
-  } on Exception {
-    return const LoginResponse(
-      success: false,
-      message: "Failed to login",
-      token: null,
-    );
+    return LoginResponse(success: true, message: null, token: token);
   }
+  // } on Exception {
+  //   return const LoginResponse(
+  //     success: false,
+  //     message: "Failed to login",
+  //     token: null,
+  //   );
+  // }
 }
 
 Future<void> logout() async {
@@ -137,6 +137,10 @@ Future<void> logout() async {
   final crisis = prefs.getStringList("crisis") ?? const [""];
   await prefs.clear();
   await prefs.setStringList("crisis", crisis);
+
+  final cache = await cacheBox;
+
+  await cache.clear();
 }
 
 /// Check if the current token is expired or not.

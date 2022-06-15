@@ -3,7 +3,6 @@ import "package:flutter_linkify/flutter_linkify.dart";
 import "package:intl/intl.dart";
 import "package:pull_to_refresh/pull_to_refresh.dart";
 
-import "../extensions/theming.dart";
 import "../utils/api.dart" as api;
 import "../utils/shimmer.dart";
 import "../utils/student.dart";
@@ -51,20 +50,21 @@ class ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final title = textTheme.subtitle1;
+    final error = theme.errorColor;
+    final title = textTheme.titleMedium;
     const bold = TextStyle(fontWeight: FontWeight.bold);
 
     return SmartRefresher(
-      physics: const BouncingScrollPhysics(),
       controller: _refreshController,
       onRefresh: _refresh,
       child: SingleChildScrollView(
         child: Center(
           child: Container(
             constraints: const BoxConstraints(maxWidth: 500),
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -76,7 +76,7 @@ class ProfilePageState extends State<ProfilePage> {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         "${student.firstName} ${student.lastName}",
-                        style: textTheme.headline6,
+                        style: textTheme.titleLarge,
                       ),
                     ),
 
@@ -95,9 +95,9 @@ class ProfilePageState extends State<ProfilePage> {
                                 stream: _schoolStream,
                                 builder: (final context, final snapshot) {
                                   if (snapshot.hasError)
-                                    return const Text(
+                                    return Text(
                                       "Failed to load school",
-                                      style: TextStyle(color: Colors.red),
+                                      style: TextStyle(color: error),
                                     );
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting)
@@ -132,9 +132,9 @@ class ProfilePageState extends State<ProfilePage> {
                           stream: _enrollmentStream,
                           builder: (final context, final snapshot) {
                             if (snapshot.hasError)
-                              return const Text(
+                              return Text(
                                 "Failed to load enrollment",
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: error),
                               );
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting)
@@ -158,16 +158,13 @@ class ProfilePageState extends State<ProfilePage> {
                         stream: _roleStream,
                         builder: (final context, final snapshot) {
                           if (snapshot.hasError)
-                            return const Text(
+                            return Text(
                               "Failed to load roles",
-                              style: TextStyle(color: Colors.red),
+                              style: TextStyle(color: error),
                             );
 
-                          final subtitle = textTheme.bodyText2!.copyWith(
-                            color: textTheme.caption!.color,
-                          );
-
-                          final adviserText = Text("Adviser", style: subtitle);
+                          final adviserText =
+                              Text("Adviser", style: textTheme.bodySmall);
                           final followersText = Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text("Followers", style: title),
@@ -246,8 +243,8 @@ class ProfilePageState extends State<ProfilePage> {
                               )
                               .toList(growable: false);
 
-                          final link = subtitle.copyWith(
-                            color: theme.primaryTextContrast,
+                          final link = textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.primary,
                           );
 
                           return Padding(
@@ -295,9 +292,15 @@ class ProfilePageState extends State<ProfilePage> {
                                         children: [
                                           Row(
                                             children: [
-                                              Text(follower.name, style: title),
+                                              Text(
+                                                follower.name,
+                                                style: title,
+                                              ),
                                               const Spacer(),
-                                              Text(follower.type, style: title),
+                                              Text(
+                                                follower.type,
+                                                style: title,
+                                              ),
                                             ],
                                           ),
                                           Row(

@@ -6,9 +6,9 @@ import "package:flutter/material.dart";
 import "constants.dart";
 import "routes.dart";
 
-final analytics = production ? FirebaseAnalytics.instance : null;
+final analytics = isProduction ? FirebaseAnalytics.instance : null;
 
-final observer = production
+final observer = isProduction
     // Use analytics when building in production mode.
     ? [
         FirebaseAnalyticsObserver(

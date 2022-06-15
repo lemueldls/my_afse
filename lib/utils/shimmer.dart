@@ -3,8 +3,6 @@ library my_afse.shimmer;
 import "package:flutter/material.dart";
 import "package:shimmer/shimmer.dart";
 
-import "settings.dart";
-
 /// Loading blocks o' shiny~
 class CustomShimmer extends StatefulWidget {
   final double? width;
@@ -27,11 +25,11 @@ class CustomShimmer extends StatefulWidget {
 class CustomShimmerState extends State<CustomShimmer> {
   @override
   Widget build(final BuildContext context) {
-    final dark = settings.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Shimmer.fromColors(
-      baseColor: dark ? Colors.grey.shade600 : Colors.grey.shade300,
-      highlightColor: dark ? Colors.grey.shade700 : Colors.grey[350]!,
+      baseColor: colorScheme.surfaceVariant,
+      highlightColor: colorScheme.surface,
       child: Padding(
         padding: widget.padding,
         child: Container(

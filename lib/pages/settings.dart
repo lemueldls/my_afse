@@ -49,7 +49,6 @@ class SettingsPageState extends State<SettingsPage> {
         constraints: const BoxConstraints(maxWidth: 750),
         child: SettingsList(
           backgroundColor: Colors.transparent,
-          physics: const BouncingScrollPhysics(),
           contentPadding: const EdgeInsets.all(8),
           sections: [
             SettingsSection(
@@ -73,6 +72,12 @@ class SettingsPageState extends State<SettingsPage> {
                     height: 32,
                     decoration: BoxDecoration(
                       color: _color,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 2,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ],
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -142,7 +147,7 @@ class SettingsPageState extends State<SettingsPage> {
                       children: [
                         RichText(
                           text: TextSpan(
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                             children: const [
                               TextSpan(
                                 text: "The AFSE integrated JumpRope client.",
@@ -172,13 +177,14 @@ class SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (final context) => AlertDialog(
-        actionsPadding: const EdgeInsets.only(right: 6),
         content: SingleChildScrollView(
           child: MaterialPicker(
             enableLabel: true,
             pickerColor: _color,
             onColorChanged: (final color) {
-              setState(() => theme.setColor(color));
+              setState(() {
+                theme.setColor(color);
+              });
 
               Navigator.of(context).pop();
             },

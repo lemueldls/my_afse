@@ -89,6 +89,7 @@ class LoginPageState extends State<LoginPage> {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -128,7 +129,7 @@ class LoginPageState extends State<LoginPage> {
                             ),
                             Text(
                               "Login using your JumpRope account",
-                              style: theme.textTheme.subtitle1,
+                              style: theme.textTheme.titleMedium,
                             ),
                           ],
                         ),
@@ -180,12 +181,21 @@ class LoginPageState extends State<LoginPage> {
                       ),
 
                       // Error text
-                      Text(_error, style: const TextStyle(color: Colors.red)),
+                      Text(
+                        _error,
+                        style: TextStyle(color: theme.errorColor),
+                      ),
 
                       // Login button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            // Foreground color
+                            onPrimary: colorScheme.onSecondaryContainer,
+                            // Background color
+                            primary: colorScheme.secondaryContainer,
+                          ).copyWith(elevation: ButtonStyleButton.allOrNull(0)),
                           focusNode: _focus,
                           onPressed: _loading ? null : _login,
                           child: _loading
@@ -198,7 +208,7 @@ class LoginPageState extends State<LoginPage> {
                                         AlwaysStoppedAnimation(Colors.white),
                                   ),
                                 )
-                              : const Text("LOGIN"),
+                              : const Text("Login"),
                         ),
                       ),
                     ],
@@ -251,8 +261,7 @@ class LoginPageState extends State<LoginPage> {
       ]);
 
       await authenticate(username, _password);
-    } else
-      setState(() => _error = login.message!);
+    } else if (mounted) setState(() => _error = login.message!);
 
     setState(() => _loading = false);
   }

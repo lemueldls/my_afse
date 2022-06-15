@@ -30,10 +30,10 @@ class AttendanceData {
   factory AttendanceData.parseData(final String html) {
     /// C O L O R S
     const colors = {
-      // Present
-      "P": Colors.green,
       // Excused
       "E": Colors.grey,
+      // Present
+      "P": Colors.green,
       // Tardy
       "T": Colors.orange,
       // Absent
@@ -122,7 +122,6 @@ class AttendancePageState extends State<AttendancePage> {
 
   @override
   Widget build(final BuildContext context) => SmartRefresher(
-        physics: const BouncingScrollPhysics(),
         controller: _refreshController,
         onRefresh: () =>
             setState(() => _attendanceStream = _broadcastAttendance()),
@@ -291,12 +290,6 @@ class PeriodCell extends StatelessWidget {
 
           return AlertDialog(
             title: Text(data.title),
-            contentPadding: const EdgeInsets.only(
-              left: 24,
-              top: 8,
-              right: 24,
-              bottom: 24,
-            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

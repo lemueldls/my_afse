@@ -1,7 +1,6 @@
 library my_afse.settings;
 
 import "package:flutter/material.dart";
-import "package:flutter/scheduler.dart";
 import "package:shared_preferences/shared_preferences.dart";
 
 import "../extensions/theming.dart";
@@ -23,14 +22,14 @@ Future<void> updateSettings() async {
   var color = prefs.getInt("color");
   if (color == null)
     // Default to blue.
-    await prefs.setInt("color", color = 0xff007bb0);
+    await prefs.setInt("color", color = 0xff25aae2);
 
   var dark = prefs.getBool("dark");
   if (dark == null)
     // Default to device dark mode.
     await prefs.setBool(
       "dark",
-      dark = SchedulerBinding.instance.window.platformBrightness ==
+      dark = WidgetsBinding.instance.platformDispatcher.platformBrightness ==
           Brightness.dark,
     );
 

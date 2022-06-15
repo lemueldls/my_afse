@@ -13,6 +13,8 @@ import "../utils/shimmer.dart";
 import "../utils/url.dart";
 import "../widgets/error.dart";
 
+const perShow = 5;
+
 class News {
   final String title;
   final String? description;
@@ -40,6 +42,7 @@ class NewsCardsState extends State<NewsCards> {
   final _prefs = SharedPreferences.getInstance();
 
   int _news = 0;
+  int _show = perShow;
 
   late Stream<NewsData> newsStream = _broadcastNews();
 
@@ -48,7 +51,7 @@ class NewsCardsState extends State<NewsCards> {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    final link = textTheme.bodyText2!.copyWith(color: theme.primaryColor);
+    final link = textTheme.bodyMedium?.copyWith(color: theme.primaryColor);
 
     return StreamBuilder<NewsData>(
       stream: newsStream,
@@ -60,7 +63,7 @@ class NewsCardsState extends State<NewsCards> {
         final news = snapshot.data!.news;
         final length = news.length;
 
-        _saveNews(length);
+        _saveNews(min(perShow, length));
 
         return news.isEmpty
             ? const Card(
@@ -69,99 +72,146 @@ class NewsCardsState extends State<NewsCards> {
                   title: Text("There are no recent news."),
                 ),
               )
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: const ClampingScrollPhysics(),
-                itemCount: length,
-                itemBuilder: (final context, final index) {
-                  final item = news[index];
+            : Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: _show,
+                    itemBuilder: (final context, final index) {
+                      final item = news[index];
 
-                  final description = item.description;
-                  final image = item.image;
+                      final description = item.description;
+                      final image = item.image;
 
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        top: 16,
-                        right: 16,
-                        bottom: 4,
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Title
-                                    Text(
-                                      item.title,
-                                      style: textTheme.subtitle1,
-                                    ),
-
-                                    // Description
-                                    if (description != null)
-                                      Linkify(
-                                        text: description,
-                                        onOpen: (final link) =>
-                                            launchURL(link.url),
-                                        linkStyle: link,
-                                        style: TextStyle(
-                                          color: textTheme.caption!.color,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Title
+                                        Text(
+                                          item.title,
+                                          style: textTheme.titleLarge,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 3,
-                                      ),
-                                  ],
-                                ),
-                              ),
 
-                              // Image
-                              if (image != null)
-                                Expanded(
-                                  flex: 0,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: CachedNetworkImage(
-                                      alignment: Alignment.topCenter,
-                                      imageUrl: image,
-                                      maxWidthDiskCache: 75,
-                                      placeholder: (final context, final url) =>
-                                          const CustomShimmer(
-                                        width: 75,
-                                        height: 40,
-                                        radius: 0,
-                                      ),
+                                        // Publish date
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                          ),
+                                          child: Text(
+                                            "Published on ${item.date}",
+                                            style: textTheme.bodyMedium,
+                                          ),
+                                        ),
+
+                                        // Description
+                                        if (description != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 8,
+                                            ),
+                                            child: Linkify(
+                                              text: description,
+                                              onOpen: (final link) =>
+                                                  launchURL(link.url),
+                                              linkStyle: link,
+                                              style: TextStyle(
+                                                color:
+                                                    textTheme.bodySmall?.color,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 3,
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                )
-                            ],
-                          ),
 
-                          // ~BUTTON~
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Row(
-                              children: [
-                                Text("Published on ${item.date}"),
-                                const Spacer(),
-                                TextButton(
-                                  child: const Text("READ MORE"),
+                                  // Image
+                                  if (image != null)
+                                    Expanded(
+                                      flex: 0,
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 16),
+                                        child: CachedNetworkImage(
+                                          fit: BoxFit.fill,
+                                          imageUrl: image,
+                                          maxWidthDiskCache: 96,
+                                          placeholder:
+                                              (final context, final url) =>
+                                                  const CustomShimmer(
+                                            width: 96,
+                                            height: 48,
+                                            radius: 0,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.only(top: 16),
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    // Foreground color
+                                    onPrimary:
+                                        theme.colorScheme.onSecondaryContainer,
+                                    // Background color
+                                    primary:
+                                        theme.colorScheme.secondaryContainer,
+                                  ).copyWith(
+                                    elevation: ButtonStyleButton.allOrNull(0),
+                                  ),
+                                  child: const Text("Read more"),
                                   onPressed: () => launchURL(item.url),
                                 ),
-                              ],
-                            ),
+                              )
+                            ],
                           ),
-                        ],
+                        ),
+                      );
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: _show == perShow
+                            ? null
+                            : () => setState(
+                                  () => _show = max(
+                                    _show - perShow,
+                                    perShow,
+                                  ),
+                                ),
+                        child: const Text("Show less"),
                       ),
-                    ),
-                  );
-                },
+                      TextButton(
+                        onPressed: _show == length
+                            ? null
+                            : () => setState(
+                                  () => _show = min(
+                                    _show + perShow,
+                                    length,
+                                  ),
+                                ),
+                        child: const Text("Show more"),
+                      ),
+                    ],
+                  ),
+                ],
               );
       },
     );
@@ -223,9 +273,7 @@ class NewsData {
 
     return NewsData(
       news: news
-          .take(5)
           .map(
-            // Use and format only the first 5 news.
             (final item) => News(
               title: item.title!,
               description: item.description,
