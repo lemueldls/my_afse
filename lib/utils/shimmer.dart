@@ -11,10 +11,10 @@ class CustomShimmer extends StatefulWidget {
   final EdgeInsetsGeometry padding;
 
   const CustomShimmer({
-    final this.width,
-    final this.height = 16,
-    final this.radius = 5,
-    final this.padding = EdgeInsets.zero,
+    this.width,
+    this.height = 16,
+    this.radius = 5,
+    this.padding = EdgeInsets.zero,
     final Key? key,
   }) : super(key: key);
 

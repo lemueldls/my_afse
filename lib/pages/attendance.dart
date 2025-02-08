@@ -23,8 +23,8 @@ class AttendanceData {
   final int columns;
 
   const AttendanceData({
-    required final this.table,
-    required final this.columns,
+    required this.table,
+    required this.columns,
   });
 
   factory AttendanceData.parseData(final String html) {
@@ -219,8 +219,8 @@ class Day {
   final Iterable<Period?> data;
 
   const Day({
-    required final this.date,
-    required final this.data,
+    required this.date,
+    required this.data,
   });
 
   @override
@@ -235,11 +235,11 @@ class Period {
   final String name;
 
   const Period({
-    required final this.letter,
-    required final this.color,
-    required final this.title,
-    required final this.teacher,
-    required final this.name,
+    required this.letter,
+    required this.color,
+    required this.title,
+    required this.teacher,
+    required this.name,
   });
 
   @override
@@ -252,8 +252,8 @@ class PeriodCell extends StatelessWidget {
   final DateTime date;
 
   const PeriodCell({
-    required final this.period,
-    required final this.date,
+    required this.period,
+    required this.date,
     final Key? key,
   }) : super(key: key);
 
@@ -324,9 +324,9 @@ class TableBody extends StatefulWidget {
   final int columns;
 
   const TableBody({
-    required final this.scrollController,
-    required final this.table,
-    required final this.columns,
+    required this.scrollController,
+    required this.table,
+    required this.columns,
     final Key? key,
   }) : super(key: key);
 
@@ -416,9 +416,9 @@ class TableCell extends StatelessWidget {
   final Alignment alignment;
 
   const TableCell({
-    required final this.value,
-    final this.width = cellSize,
-    final this.alignment = Alignment.center,
+    required this.value,
+    this.width = cellSize,
+    this.alignment = Alignment.center,
     final Key? key,
   }) : super(key: key);
 
@@ -438,8 +438,8 @@ class TableHead extends StatelessWidget {
   final int columns;
 
   const TableHead({
-    required final this.scrollController,
-    required final this.columns,
+    required this.scrollController,
+    required this.columns,
     final Key? key,
   }) : super(key: key);
 
@@ -474,8 +474,8 @@ class _AttendancePageShimmer extends StatelessWidget {
   final int columns;
 
   const _AttendancePageShimmer({
-    required final this.rows,
-    required final this.columns,
+    required this.rows,
+    required this.columns,
     final Key? key,
   }) : super(key: key);
 

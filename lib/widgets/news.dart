@@ -23,11 +23,11 @@ class News {
   final String url;
 
   const News({
-    required final this.title,
-    required final this.description,
-    required final this.image,
-    required final this.date,
-    required final this.url,
+    required this.title,
+    required this.description,
+    required this.image,
+    required this.date,
+    required this.url,
   });
 }
 
@@ -157,7 +157,7 @@ class NewsCardsState extends State<NewsCards> {
                                           ),
                                         ),
                                       ),
-                                    )
+                                    ),
                                 ],
                               ),
                               Container(
@@ -166,10 +166,9 @@ class NewsCardsState extends State<NewsCards> {
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     // Foreground color
-                                    onPrimary:
+                                    foregroundColor:
                                         theme.colorScheme.onSecondaryContainer,
-                                    // Background color
-                                    primary:
+                                    backgroundColor:
                                         theme.colorScheme.secondaryContainer,
                                   ).copyWith(
                                     elevation: ButtonStyleButton.allOrNull(0),
@@ -177,7 +176,7 @@ class NewsCardsState extends State<NewsCards> {
                                   child: const Text("Read more"),
                                   onPressed: () => launchURL(item.url),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -258,7 +257,7 @@ class NewsCardsState extends State<NewsCards> {
 class NewsData {
   final List<News> news;
 
-  const NewsData({required final this.news});
+  const NewsData({required this.news});
 
   factory NewsData.parseData(final String data) {
     final now = DateTime.now();
@@ -291,7 +290,7 @@ class _NewsCardShimmer extends StatelessWidget {
   final int news;
 
   const _NewsCardShimmer({
-    required final this.news,
+    required this.news,
     final Key? key,
   }) : super(key: key);
 
@@ -303,8 +302,8 @@ class _NewsCardShimmer extends StatelessWidget {
         itemBuilder: (final context, final index) => Card(
           child: news == 0
               ? const ListTile(title: CustomShimmer())
-              : Padding(
-                  padding: const EdgeInsets.all(16),
+              : const Padding(
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -313,10 +312,10 @@ class _NewsCardShimmer extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: EdgeInsets.only(right: 8),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                children: [
                                   CustomShimmer(
                                     width: 200,
                                     padding: EdgeInsets.only(bottom: 6),
@@ -337,7 +336,7 @@ class _NewsCardShimmer extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const CustomShimmer(
+                          CustomShimmer(
                             width: 75,
                             height: 40,
                             radius: 0,
@@ -345,15 +344,15 @@ class _NewsCardShimmer extends StatelessWidget {
                         ],
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: EdgeInsets.only(top: 4),
                         child: Row(
-                          children: const [
+                          children: [
                             CustomShimmer(width: 200),
                             Spacer(),
-                            CustomShimmer(width: 100, height: 32)
+                            CustomShimmer(width: 100, height: 32),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

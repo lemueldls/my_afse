@@ -22,10 +22,10 @@ class Event {
   final String url;
 
   const Event({
-    required final this.summary,
-    required final this.time,
-    required final this.location,
-    required final this.url,
+    required this.summary,
+    required this.time,
+    required this.location,
+    required this.url,
   });
 }
 
@@ -98,9 +98,9 @@ class EventCardsState extends State<EventCards> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(location)
+                                    Text(location),
                                   ],
-                                )
+                                ),
                             ],
                           ),
                           trailing: IconButton(
@@ -180,7 +180,7 @@ class EventCardsState extends State<EventCards> {
 class EventData {
   final List<Event> events;
 
-  const EventData({required final this.events});
+  const EventData({required this.events});
 
   factory EventData.parseData(final String data) {
     final ical = ICalendar.fromString(data);
@@ -237,7 +237,7 @@ class _EventsCardShimmer extends StatelessWidget {
   final int events;
 
   const _EventsCardShimmer({
-    required final this.events,
+    required this.events,
     final Key? key,
   }) : super(key: key);
 

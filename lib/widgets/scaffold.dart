@@ -9,8 +9,8 @@ class PageScaffold extends StatelessWidget {
   final Widget page;
 
   const PageScaffold({
-    required final this.title,
-    required final this.page,
+    required this.title,
+    required this.page,
     final Key? key,
   }) : super(key: key);
 

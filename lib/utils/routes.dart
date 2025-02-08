@@ -59,9 +59,9 @@ class PageRoute {
   final bool wrap;
 
   const PageRoute({
-    required final this.title,
-    required final this.page,
-    final this.icon,
-    final this.wrap = true,
+    required this.title,
+    required this.page,
+    this.icon,
+    this.wrap = true,
   });
 }

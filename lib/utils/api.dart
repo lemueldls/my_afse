@@ -186,9 +186,9 @@ class LoginResponse {
   final String? token;
 
   const LoginResponse({
-    required final this.success,
-    required final this.message,
-    required final this.token,
+    required this.success,
+    required this.message,
+    required this.token,
   });
 
   factory LoginResponse.fromJson(final Map<String, dynamic> json) =>
@@ -207,8 +207,8 @@ class ValidateResponse {
   final String? username;
 
   const ValidateResponse({
-    required final this.success,
-    required final this.username,
+    required this.success,
+    required this.username,
   });
 
   factory ValidateResponse.fromJson(final Map<String, dynamic> json) =>

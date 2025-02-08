@@ -16,7 +16,7 @@ class GradesNodeTree extends StatelessWidget {
   final MasteryScore score;
 
   const GradesNodeTree({
-    required final this.score,
+    required this.score,
     final Key? key,
   }) : super(key: key);
 
@@ -84,7 +84,7 @@ class GradesNodeTree extends StatelessWidget {
                           child: Text(score.label),
                         ),
                       ),
-                      Expanded(child: bar)
+                      Expanded(child: bar),
                     ],
                   ),
 
@@ -131,7 +131,7 @@ class GradesNodeTree extends StatelessWidget {
                                             fontSize: 12,
                                           ),
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -143,7 +143,7 @@ class GradesNodeTree extends StatelessWidget {
                         Text("=${sum.toStringAsFixed(0)} weight"),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -249,7 +249,7 @@ class GradesNodeTree extends StatelessWidget {
               ),
             ),
             const Text("Last Modified: ", style: bold),
-            Text(score.modified)
+            Text(score.modified),
           ],
         ),
       ),
@@ -301,7 +301,7 @@ class GradesPageState extends State<GradesPage> {
                           return ListTile(
                             title: Text(
                               "Failed to load grades",
-                              style: TextStyle(color: theme.errorColor),
+                              style: TextStyle(color: theme.colorScheme.error),
                             ),
                           );
                         if (snapshot.connectionState == ConnectionState.waiting)
@@ -448,20 +448,20 @@ class MasteryScore {
   final String modified;
 
   const MasteryScore({
-    required final this.expanded,
-    required final this.label,
-    required final this.scoreLabel,
-    required final this.color,
-    required final this.percent,
-    required final this.sum,
-    required final this.missing,
-    required final this.children,
-    required final this.title,
-    required final this.comment,
-    required final this.recent,
-    required final this.weight,
-    required final this.end,
-    required final this.modified,
+    required this.expanded,
+    required this.label,
+    required this.scoreLabel,
+    required this.color,
+    required this.percent,
+    required this.sum,
+    required this.missing,
+    required this.children,
+    required this.title,
+    required this.comment,
+    required this.recent,
+    required this.weight,
+    required this.end,
+    required this.modified,
   });
 
   factory MasteryScore.fromJson(final Map<String, dynamic> json) {
@@ -518,7 +518,7 @@ class _GradesPageShimmer extends StatelessWidget {
   final int scores;
 
   const _GradesPageShimmer({
-    required final this.scores,
+    required this.scores,
     final Key? key,
   }) : super(key: key);
 
@@ -529,8 +529,8 @@ class _GradesPageShimmer extends StatelessWidget {
         itemCount: max(scores, 1),
         itemBuilder: (final context, final index) => scores == 0
             ? const ListTile(title: CustomShimmer())
-            : Padding(
-                padding: const EdgeInsets.symmetric(
+            : const Padding(
+                padding: EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
                 ),
@@ -544,7 +544,7 @@ class _GradesPageShimmer extends StatelessWidget {
                               Expanded(
                                 flex: 2,
                                 child: Column(
-                                  children: const [
+                                  children: [
                                     CustomShimmer(),
                                     CustomShimmer(
                                       padding: EdgeInsets.only(
@@ -555,29 +555,29 @@ class _GradesPageShimmer extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const Expanded(
+                              Expanded(
                                 child: CustomShimmer(
                                   height: 24,
                                   padding: EdgeInsets.only(left: 8),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                           Row(
-                            children: const [
+                            children: [
                               CustomShimmer(width: 160),
                               Spacer(),
-                              CustomShimmer(width: 80)
+                              CustomShimmer(width: 80),
                             ],
                           ),
                         ],
                       ),
                     ),
-                    const CustomShimmer(
+                    CustomShimmer(
                       width: 24,
                       height: 24,
                       padding: EdgeInsets.only(left: 16),
-                    )
+                    ),
                   ],
                 ),
               ),

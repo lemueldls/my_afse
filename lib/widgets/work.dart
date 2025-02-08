@@ -17,7 +17,7 @@ class WorkCard extends StatefulWidget {
   final String type;
 
   const WorkCard({
-    required final this.type,
+    required this.type,
     final Key? key,
   }) : super(key: key);
 
@@ -63,7 +63,7 @@ class WorkCardState extends State<WorkCard> {
                   return ListTile(
                     title: Text(
                       "Failed to load $key work",
-                      style: TextStyle(color: theme.errorColor),
+                      style: TextStyle(color: theme.colorScheme.error),
                     ),
                   );
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -130,7 +130,7 @@ class WorkCardState extends State<WorkCard> {
                                         ),
                                         Text(work.course),
                                       ],
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -296,15 +296,15 @@ class WorkData {
   final String teacherEmail;
 
   const WorkData({
-    required final this.title,
-    required final this.course,
-    required final this.description,
-    required final this.type,
-    required final this.weight,
-    required final this.code,
-    required final this.end,
-    required final this.teacherName,
-    required final this.teacherEmail,
+    required this.title,
+    required this.course,
+    required this.description,
+    required this.type,
+    required this.weight,
+    required this.code,
+    required this.end,
+    required this.teacherName,
+    required this.teacherEmail,
   });
 
   factory WorkData.fromJson(final Map<String, dynamic> data) {
@@ -331,7 +331,7 @@ class _WorkCardShimmer extends StatelessWidget {
   final int count;
 
   const _WorkCardShimmer({
-    required final this.count,
+    required this.count,
     final Key? key,
   }) : super(key: key);
 

@@ -13,8 +13,8 @@ class Enrollment {
   final String? end;
 
   const Enrollment({
-    required final this.start,
-    required final this.end,
+    required this.start,
+    required this.end,
   });
 
   factory Enrollment.fromJson(final List<Map<String, dynamic>> data) {
@@ -53,7 +53,7 @@ class ProfilePageState extends State<ProfilePage> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final error = theme.errorColor;
+    final error = theme.colorScheme.error;
     final title = textTheme.titleMedium;
     const bold = TextStyle(fontWeight: FontWeight.bold);
 
@@ -113,7 +113,7 @@ class ProfilePageState extends State<ProfilePage> {
                           ),
 
                           // OSIS Number
-                          Text(student.externalId)
+                          Text(student.externalId),
                         ],
                       ),
                     ),
@@ -177,19 +177,19 @@ class ProfilePageState extends State<ProfilePage> {
                               ConnectionState.waiting) {
                             // Placeholders
 
-                            final teacher = Row(
+                            const teacher = Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
+                              children: [
                                 CustomShimmer(width: 90),
                                 CustomShimmer(width: 65),
                               ],
                             );
-                            final sub = Padding(
-                              padding: const EdgeInsets.only(top: 4),
+                            const sub = Padding(
+                              padding: EdgeInsets.only(top: 4),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
-                                children: const [
+                                children: [
                                   CustomShimmer(width: 150, height: 14),
                                   CustomShimmer(width: 65, height: 14),
                                 ],
@@ -197,13 +197,12 @@ class ProfilePageState extends State<ProfilePage> {
                             );
 
                             final children = <Widget>[
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 8, bottom: 1),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8, bottom: 1),
                                 child: teacher,
                               ),
                               adviserText,
-                              sub
+                              sub,
                             ];
 
                             if (hasFollowers) {
@@ -211,8 +210,8 @@ class ProfilePageState extends State<ProfilePage> {
 
                               for (var i = 0; i < followersLength; i++)
                                 children.add(
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 8),
                                     child: Column(children: [teacher, sub]),
                                   ),
                                 );
@@ -319,7 +318,7 @@ class ProfilePageState extends State<ProfilePage> {
                                       ),
                                     );
                                   },
-                                )
+                                ),
                               ],
                             ),
                           );
@@ -360,11 +359,11 @@ class Role {
   final String schedule;
 
   const Role({
-    required final this.id,
-    required final this.name,
-    required final this.email,
-    required final this.type,
-    required final this.schedule,
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.type,
+    required this.schedule,
   });
 
   factory Role.fromJson(final Map<String, dynamic> role) => Role(
@@ -379,7 +378,7 @@ class Role {
 class School {
   final String name;
 
-  const School({required final this.name});
+  const School({required this.name});
 
   factory School.fromJson(final List<Map<String, dynamic>> data) {
     final school = data[0];

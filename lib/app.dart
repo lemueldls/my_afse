@@ -14,8 +14,8 @@ class App extends StatelessWidget {
   final String page;
 
   const App({
-    required final this.loggedIn,
-    required final this.page,
+    required this.loggedIn,
+    required this.page,
     final Key? key,
   }) : super(key: key);
 

@@ -183,7 +183,7 @@ class LoginPageState extends State<LoginPage> {
                       // Error text
                       Text(
                         _error,
-                        style: TextStyle(color: theme.errorColor),
+                        style: TextStyle(color: theme.colorScheme.error),
                       ),
 
                       // Login button
@@ -192,9 +192,8 @@ class LoginPageState extends State<LoginPage> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             // Foreground color
-                            onPrimary: colorScheme.onSecondaryContainer,
-                            // Background color
-                            primary: colorScheme.secondaryContainer,
+                            foregroundColor: colorScheme.onSecondaryContainer,
+                            backgroundColor: colorScheme.secondaryContainer,
                           ).copyWith(elevation: ButtonStyleButton.allOrNull(0)),
                           focusNode: _focus,
                           onPressed: _loading ? null : _login,

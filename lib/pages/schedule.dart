@@ -24,12 +24,12 @@ class Period {
   final String? room;
 
   const Period({
-    required final this.index,
-    required final this.name,
-    required final this.start,
-    required final this.end,
-    required final this.teachers,
-    required final this.room,
+    required this.index,
+    required this.name,
+    required this.start,
+    required this.end,
+    required this.teachers,
+    required this.room,
   });
 }
 
@@ -38,8 +38,8 @@ class PeriodListView extends StatefulWidget {
   final bool today;
 
   const PeriodListView({
-    required final this.day,
-    required final this.today,
+    required this.day,
+    required this.today,
     final Key? key,
   }) : super(key: key);
 
@@ -218,8 +218,8 @@ class ScheduleData {
   final List<List<Period>> schedule;
 
   const ScheduleData({
-    required final this.times,
-    required final this.schedule,
+    required this.times,
+    required this.schedule,
   });
 
   factory ScheduleData.parseData(final String html) {
@@ -324,7 +324,6 @@ class SchedulePageState extends State<SchedulePage> {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -487,7 +486,7 @@ class _SchedulePageShimmer extends StatelessWidget {
   final int periods;
 
   const _SchedulePageShimmer({
-    required final this.periods,
+    required this.periods,
     final Key? key,
   }) : super(key: key);
 
@@ -513,7 +512,7 @@ class _SchedulePageShimmer extends StatelessWidget {
               title: CustomShimmer(),
               trailing: SizedBox.shrink(),
             ),
-          )
+          ),
         ],
       );
 }

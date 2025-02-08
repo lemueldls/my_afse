@@ -161,7 +161,7 @@ class HomePageState extends State<HomePage> {
       // 6pm - 10pm
       22: "Good Evening",
       // 10pm - 12am
-      23: "Sweet Dreams"
+      23: "Sweet Dreams",
     };
 
     final hour = now.hour;

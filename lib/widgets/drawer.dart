@@ -14,11 +14,11 @@ class DrawerListTile extends StatelessWidget {
   final GestureTapCallback? onTap;
 
   const DrawerListTile({
-    required final this.route,
-    final this.icon = true,
-    final this.title,
-    final this.subtitle,
-    final this.onTap,
+    required this.route,
+    this.icon = true,
+    this.title,
+    this.subtitle,
+    this.onTap,
     final Key? key,
   }) : super(key: key);
 
@@ -116,7 +116,7 @@ class PageDrawer extends StatelessWidget {
                     actions: [
                       TextButton(
                         style: TextButton.styleFrom(
-                          primary: colorScheme.onSecondary,
+                          foregroundColor: colorScheme.onSecondary,
                         ),
                         onPressed: updater.update,
                         child: const Text("Update"),
@@ -164,7 +164,7 @@ class PageDrawer extends StatelessWidget {
                   );
                 },
                 child: const Text("Yes"),
-              )
+              ),
             ],
           );
         },
